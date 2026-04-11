@@ -2,44 +2,50 @@
 
 ## Workspace Overview
 - This repository is a pnpm + Turborepo monorepo.
-- Apps:
-  - `apps/api`: NestJS backend.
-  - `apps/web`: Next.js frontend (port 3000).
-  - `apps/docs`: Next.js docs site (port 3001).
-- Shared packages:
-  - `packages/ui`: shared React UI components (`@repo/ui`).
-  - `packages/eslint-config`: shared ESLint configs.
-  - `packages/typescript-config`: shared tsconfig presets.
+- Active apps in this workspace:
+  - `apps/api` (NestJS backend)
+  - `apps/web` (Next.js app, port 3000)
+  - `apps/docs` (Next.js docs app, port 3001)
+- Shared packages used now:
+  - `packages/ui`
+  - `packages/eslint-config`
+  - `packages/typescript-config`
 
 ## Build and Test
-- Use pnpm only (workspace is configured for pnpm workspaces).
+- Use pnpm only (`pnpm@9`, workspaces enabled).
 - Root commands:
   - `pnpm dev`
   - `pnpm build`
   - `pnpm lint`
   - `pnpm check-types`
   - `pnpm format`
-- Target one project with Turborepo filters, for example:
+- Targeted runs:
   - `pnpm turbo run dev --filter=web`
   - `pnpm turbo run build --filter=api`
-  - `pnpm turbo run test --filter=api`
+  - `pnpm --filter api test`
+  - `pnpm --filter api test:e2e`
 
-## Code and Tooling Conventions
-- Node version is `>=18`.
+## Architecture and Boundaries
 - Keep changes scoped to the affected app/package; avoid cross-package refactors unless requested.
-- Respect shared configs before adding local overrides:
-  - ESLint defaults come from `packages/eslint-config`.
-  - TypeScript defaults come from `packages/typescript-config`.
-- Lint is strict for web/docs/ui (`--max-warnings 0`), so warnings should be treated as failures.
-- API uses NestJS decorators and emits metadata; preserve decorator-related tsconfig settings in `apps/api`.
+- Respect shared configuration packages before adding local overrides:
+  - `packages/eslint-config`
+  - `packages/typescript-config`
+- Preserve NestJS decorator metadata settings in `apps/api/tsconfig.json`.
+- Treat `docs/ARCHITECTURE.md` as the intended target architecture. Some documented modules/packages (for example worker/database modules) may be planned and not fully scaffolded yet.
 
-## Common Pitfalls
-- Do not use npm/yarn commands for install or script execution in this repo.
-- The web and docs apps have fixed default dev ports (3000 and 3001).
-- Turborepo task dependencies (`^build`, `^lint`, `^check-types`) can cause downstream failures if an upstream package is broken.
+## Conventions and Pitfalls
+- Node engine is `>=18` (docs currently recommend Node 22 LTS for local setup).
+- Lint is strict for web/docs/ui (`--max-warnings 0`), so warnings should be treated as failures.
+- Do not use npm/yarn commands for install or scripts in this repo.
+- `apps/api` dev server and `apps/docs` dev server both default to port 3001; avoid running both on the same port simultaneously.
+- Turborepo task dependencies (`^build`, `^lint`, `^check-types`) can fail downstream tasks when an upstream package is broken.
 
 ## Link to Existing Docs
-- Root overview and Turborepo starter notes: `README.md`
-- API app notes and test commands: `apps/api/README.md`
-- Web app notes: `apps/web/README.md`
-- Docs app notes: `apps/docs/README.md`
+- Primary docs index: `docs/README.md`
+- Architecture: `docs/ARCHITECTURE.md`
+- Contributing and local setup: `docs/CONTRIBUTING.md`
+- Testing strategy: `docs/TESTING.md`
+- API contract: `docs/API.md`
+- Configuration: `docs/CONFIG.md`
+- Security: `docs/SECURITY.md`
+- Ops runbooks: `docs/runbooks/README.md`
