@@ -5,7 +5,7 @@ import tseslint from 'typescript-eslint';
 /**
  * Root ESLint flat config for the Cipta monorepo.
  * Enforces strict TypeScript rules across all packages.
- * Sub-packages extend via `@repo/eslint-config` as needed.
+ * Sub-packages extend via `@cipta/eslint-config` as needed.
  *
  * @type {import("eslint").Linter.Config[]}
  */
