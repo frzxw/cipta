@@ -27,7 +27,7 @@ The Worker is the **muscle** of the Cipta platform. It performs all CPU/GPU-inte
 
 ## 2. Architecture
 
-```
+```text
 ┌────────────────────────────────────────────────────────┐
 │                    apps/worker                          │
 │                                                        │
@@ -345,7 +345,7 @@ await ingestorQueue.add(
 
 ### Chain Diagram
 
-```
+```text
 ingestor:download ──► ingestor:transcribe ──► ingestor:analyze
                                                      │
                                                      ▼ (user approval)
@@ -386,7 +386,7 @@ export function createStorageClient(config: StorageConfig): StorageClient {
 
 ### Storage Path Convention
 
-```
+```text
 {workspace_id}/
 ├── sources/
 │   ├── {source_id}/
@@ -516,7 +516,7 @@ The worker must handle shutdown signals to avoid leaving jobs in a broken state:
 
 ## 13. Scaling Strategy
 
-| Scale Level           | Configuration                                    |
+| Scale Level           | Configuration                                    | Use Case          |
 | --------------------- | ------------------------------------------------ | ----------------- |
 | **Single instance**   | 1 worker process, all queues                     | Development       |
 | **Per-queue workers** | 1 process per queue type                         | Small production  |

@@ -71,6 +71,7 @@ export default tseslint.config(
       '*.config.mjs',
       '*.config.js',
       '*.config.ts',
+      'packages/eslint-config/**',
     ],
   },
 );

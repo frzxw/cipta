@@ -1,3 +1,5 @@
+<!-- markdownlint-disable-file MD041 -->
+
 ## Summary
 
 <!-- What does this PR do? One or two sentences. -->
@@ -14,7 +16,7 @@
 
 - [ ] `docs/PRD.md` Feature: F-\_\_\_
 - [ ] `docs/specs/___.md` Section: §\_\_\_
-- [ ] Acceptance Criteria: AC-**_._**
+- [ ] Acceptance Criteria: AC-\_\_\_.\_\_\_
 - [ ] N/A (infra, chore, etc.)
 
 ## Type of Change
