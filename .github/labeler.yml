@@ -1,0 +1,52 @@
+# Maps file paths to PR labels.
+# Used by .github/workflows/auto-label.yml
+
+'app:api':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/api/**'
+
+'app:worker':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/worker/**'
+
+'app:web':
+  - changed-files:
+      - any-glob-to-any-file: 'apps/web/**'
+
+'pkg:database':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/database/**'
+
+'pkg:shared':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/shared/**'
+
+'pkg:ui':
+  - changed-files:
+      - any-glob-to-any-file: 'packages/ui/**'
+
+'infra':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'docker-compose*.yml'
+          - 'Dockerfile*'
+          - '.github/**'
+          - 'turbo.json'
+          - 'pnpm-workspace.yaml'
+
+'docs':
+  - changed-files:
+      - any-glob-to-any-file: 'docs/**'
+
+'tests':
+  - changed-files:
+      - any-glob-to-any-file:
+          - '**/*.spec.ts'
+          - '**/*.e2e-spec.ts'
+          - 'e2e/**'
+          - 'playwright.config.ts'
+
+'schema':
+  - changed-files:
+      - any-glob-to-any-file:
+          - 'packages/database/prisma/**'
