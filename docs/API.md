@@ -15,6 +15,7 @@
 All API responses follow a consistent envelope format:
 
 **Success:**
+
 ```json
 {
   "success": true,
@@ -27,6 +28,7 @@ All API responses follow a consistent envelope format:
 ```
 
 **Paginated Success:**
+
 ```json
 {
   "success": true,
@@ -45,15 +47,14 @@ All API responses follow a consistent envelope format:
 ```
 
 **Error:**
+
 ```json
 {
   "success": false,
   "error": {
     "code": "VALIDATION_ERROR",
     "message": "URL is required",
-    "details": [
-      { "field": "url", "message": "must be a valid URL" }
-    ]
+    "details": [{ "field": "url", "message": "must be a valid URL" }]
   },
   "meta": {
     "timestamp": "2026-04-11T08:00:00Z",
@@ -64,16 +65,16 @@ All API responses follow a consistent envelope format:
 
 ### 1.2 Error Codes
 
-| HTTP Status | Error Code | Description |
-|-------------|-----------|-------------|
-| 400 | `VALIDATION_ERROR` | Request body/params failed validation |
-| 401 | `UNAUTHORIZED` | Missing or invalid JWT |
-| 403 | `FORBIDDEN` | Insufficient role/permissions |
-| 404 | `NOT_FOUND` | Resource does not exist |
-| 409 | `CONFLICT` | Duplicate resource (e.g., duplicate URL) |
-| 422 | `UNPROCESSABLE_ENTITY` | Valid syntax but semantically invalid |
-| 429 | `RATE_LIMITED` | Too many requests |
-| 500 | `INTERNAL_ERROR` | Server error |
+| HTTP Status | Error Code             | Description                              |
+| ----------- | ---------------------- | ---------------------------------------- |
+| 400         | `VALIDATION_ERROR`     | Request body/params failed validation    |
+| 401         | `UNAUTHORIZED`         | Missing or invalid JWT                   |
+| 403         | `FORBIDDEN`            | Insufficient role/permissions            |
+| 404         | `NOT_FOUND`            | Resource does not exist                  |
+| 409         | `CONFLICT`             | Duplicate resource (e.g., duplicate URL) |
+| 422         | `UNPROCESSABLE_ENTITY` | Valid syntax but semantically invalid    |
+| 429         | `RATE_LIMITED`         | Too many requests                        |
+| 500         | `INTERNAL_ERROR`       | Server error                             |
 
 ### 1.3 Authentication
 
@@ -87,12 +88,12 @@ Authorization: Bearer <access_token>
 
 Paginated endpoints accept:
 
-| Param | Type | Default | Description |
-|-------|------|---------|-------------|
-| `page` | integer | 1 | Page number (1-indexed) |
-| `limit` | integer | 20 | Items per page (max 100) |
-| `sortBy` | string | `createdAt` | Field to sort by |
-| `sortOrder` | string | `desc` | `asc` or `desc` |
+| Param       | Type    | Default     | Description              |
+| ----------- | ------- | ----------- | ------------------------ |
+| `page`      | integer | 1           | Page number (1-indexed)  |
+| `limit`     | integer | 20          | Items per page (max 100) |
+| `sortBy`    | string  | `createdAt` | Field to sort by         |
+| `sortOrder` | string  | `desc`      | `asc` or `desc`          |
 
 ### 1.5 Workspace Scoping
 
@@ -113,6 +114,7 @@ If omitted, the user's default workspace is used.
 Create a new user account.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -122,11 +124,13 @@ Create a new user account.
 ```
 
 **Validation:**
+
 - `email`: required, valid email, unique
 - `password`: required, min 8 chars, 1 uppercase, 1 number, 1 special
 - `displayName`: required, 2-50 chars
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -159,6 +163,7 @@ Create a new user account.
 Authenticate and receive tokens.
 
 **Request:**
+
 ```json
 {
   "email": "user@example.com",
@@ -167,6 +172,7 @@ Authenticate and receive tokens.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -192,6 +198,7 @@ Authenticate and receive tokens.
 Rotate tokens using a valid refresh token.
 
 **Request:**
+
 ```json
 {
   "refreshToken": "eyJ..."
@@ -199,6 +206,7 @@ Rotate tokens using a valid refresh token.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -217,6 +225,7 @@ Rotate tokens using a valid refresh token.
 Invalidate the current refresh token.
 
 **Request:**
+
 ```json
 {
   "refreshToken": "eyJ..."
@@ -224,6 +233,7 @@ Invalidate the current refresh token.
 ```
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -240,6 +250,7 @@ Invalidate the current refresh token.
 Ingest a new source from a URL.
 
 **Request:**
+
 ```json
 {
   "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -249,11 +260,13 @@ Ingest a new source from a URL.
 ```
 
 **Validation:**
+
 - `url`: required, valid URL (YouTube, TikTok, Twitch supported)
 - `projectId`: optional, valid UUID
 - `quality`: optional, enum: `highest` | `1080p` | `720p` (default: `highest`)
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -276,6 +289,7 @@ List all sources in the workspace.
 **Query Params:** Standard pagination + `status` filter.
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -302,6 +316,7 @@ List all sources in the workspace.
 Get a single source with its transcript and viral spikes.
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -343,6 +358,7 @@ Get a single source with its transcript and viral spikes.
 Delete a source and all derived data (transcripts, chunks, assets, variations).
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -359,6 +375,7 @@ Delete a source and all derived data (transcripts, chunks, assets, variations).
 Approve, reject, or adjust a viral spike.
 
 **Request:**
+
 ```json
 {
   "status": "APPROVED",
@@ -369,10 +386,12 @@ Approve, reject, or adjust a viral spike.
 ```
 
 **Validation:**
+
 - `status`: optional, enum: `APPROVED` | `REJECTED`
 - `startTime`, `endTime`: optional, float, `endTime > startTime`, min duration 15s, max 90s
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -393,6 +412,7 @@ Approve, reject, or adjust a viral spike.
 Create a Chunk from an approved Viral Spike and begin extraction.
 
 **Response (201):**
+
 ```json
 {
   "success": true,
@@ -414,6 +434,7 @@ Create a Chunk from an approved Viral Spike and begin extraction.
 Trigger rendering of a Chunk into a finished Asset.
 
 **Request:**
+
 ```json
 {
   "chunkId": "chk_abc123",
@@ -423,11 +444,13 @@ Trigger rendering of a Chunk into a finished Asset.
 ```
 
 **Validation:**
+
 - `chunkId`: required, valid UUID, Chunk must be in `READY` status
 - `renderProfileId`: optional, valid UUID (uses workspace default if omitted)
 - `variationCount`: optional, integer, 1-100, default 10
 
 **Response (202):**
+
 ```json
 {
   "success": true,
@@ -459,6 +482,7 @@ List all rendered assets in the workspace.
 Get a single asset with its variations.
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -501,6 +525,7 @@ Get a single asset with its variations.
 Create a new render profile.
 
 **Request:**
+
 ```json
 {
   "name": "Bold Podcast Style",
@@ -556,6 +581,7 @@ Delete a render profile.
 Connect a new social media account.
 
 **Request:**
+
 ```json
 {
   "platform": "TIKTOK",
@@ -569,6 +595,7 @@ Connect a new social media account.
 ```
 
 **Validation:**
+
 - `platform`: required, enum: `TIKTOK` | `INSTAGRAM` | `YOUTUBE`
 - `platformAccountId`: required, string
 - `credentials`: required, object (validated per platform)
@@ -602,6 +629,7 @@ Disconnect and remove an account.
 Create a new account cluster.
 
 **Request:**
+
 ```json
 {
   "name": "Tech Podcast Clips",
@@ -649,6 +677,7 @@ Remove an account from a cluster.
 Schedule variations for distribution to a cluster.
 
 **Request:**
+
 ```json
 {
   "assetId": "ast_abc123",
@@ -660,6 +689,7 @@ Schedule variations for distribution to a cluster.
 ```
 
 **Validation:**
+
 - `assetId`: required, must have `READY` variations
 - `clusterId`: required, must have active accounts
 - `caption`: optional, max 2200 chars
@@ -690,6 +720,7 @@ Cancel a scheduled (not yet published) distribution.
 Get job status and progress.
 
 **Response (200):**
+
 ```json
 {
   "success": true,
@@ -748,32 +779,32 @@ Remove a member from the workspace.
 
 ### Server → Client Events
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `job:progress` | `{ jobId, progress, stage }` | Job progress update (0-100) |
-| `job:completed` | `{ jobId, result }` | Job completed successfully |
-| `job:failed` | `{ jobId, error }` | Job failed |
-| `source:status` | `{ sourceId, status }` | Source status changed |
-| `asset:ready` | `{ assetId, variations }` | Asset render completed |
-| `distribution:published` | `{ distributionId, platformPostUrl }` | Content published |
+| Event                    | Payload                               | Description                 |
+| ------------------------ | ------------------------------------- | --------------------------- |
+| `job:progress`           | `{ jobId, progress, stage }`          | Job progress update (0-100) |
+| `job:completed`          | `{ jobId, result }`                   | Job completed successfully  |
+| `job:failed`             | `{ jobId, error }`                    | Job failed                  |
+| `source:status`          | `{ sourceId, status }`                | Source status changed       |
+| `asset:ready`            | `{ assetId, variations }`             | Asset render completed      |
+| `distribution:published` | `{ distributionId, platformPostUrl }` | Content published           |
 
 ### Client → Server Events
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `subscribe:job` | `{ jobId }` | Subscribe to job updates |
+| Event                 | Payload           | Description                       |
+| --------------------- | ----------------- | --------------------------------- |
+| `subscribe:job`       | `{ jobId }`       | Subscribe to job updates          |
 | `subscribe:workspace` | `{ workspaceId }` | Subscribe to all workspace events |
 
 ---
 
 ## 13. Rate Limiting
 
-| Scope | Limit | Window |
-|-------|-------|--------|
-| Global per user | 100 requests | 1 minute |
-| Auth endpoints | 10 requests | 1 minute |
-| Source ingestion | 20 requests | 1 hour |
-| Render trigger | 50 requests | 1 hour |
+| Scope            | Limit        | Window   |
+| ---------------- | ------------ | -------- |
+| Global per user  | 100 requests | 1 minute |
+| Auth endpoints   | 10 requests  | 1 minute |
+| Source ingestion | 20 requests  | 1 hour   |
+| Render trigger   | 50 requests  | 1 hour   |
 
 Rate limit headers are included in all responses:
 

@@ -98,12 +98,12 @@ Client                        API                          Database
 }
 ```
 
-| Property | Value |
-|----------|-------|
-| Algorithm | HS256 |
-| Expiry | 15 minutes |
-| Secret | `JWT_ACCESS_SECRET` (env variable, 256-bit random) |
-| Contains | User ID, email, workspace memberships |
+| Property  | Value                                              |
+| --------- | -------------------------------------------------- |
+| Algorithm | HS256                                              |
+| Expiry    | 15 minutes                                         |
+| Secret    | `JWT_ACCESS_SECRET` (env variable, 256-bit random) |
+| Contains  | User ID, email, workspace memberships              |
 
 ### 3.2 Refresh Token
 
@@ -119,12 +119,12 @@ Client                        API                          Database
 }
 ```
 
-| Property | Value |
-|----------|-------|
-| Algorithm | HS256 |
-| Expiry | 7 days |
-| Secret | `JWT_REFRESH_SECRET` (different from access secret) |
-| Contains | User ID, unique token ID, token family ID |
+| Property  | Value                                               |
+| --------- | --------------------------------------------------- |
+| Algorithm | HS256                                               |
+| Expiry    | 7 days                                              |
+| Secret    | `JWT_REFRESH_SECRET` (different from access secret) |
+| Contains  | User ID, unique token ID, token family ID           |
 
 ### 3.3 Token Family (Rotation Detection)
 
@@ -137,11 +137,11 @@ All refresh tokens derived from the same login session share a `family` ID. If a
 ```typescript
 async refreshToken(oldRefreshToken: string) {
   const payload = this.jwtService.verify(oldRefreshToken);
-  
+
   const storedToken = await this.prisma.refreshToken.findUnique({
     where: { jti: payload.jti },
   });
-  
+
   if (!storedToken) {
     // Token was already used — potential theft!
     await this.prisma.refreshToken.deleteMany({
@@ -149,10 +149,10 @@ async refreshToken(oldRefreshToken: string) {
     });
     throw new UnauthorizedException('Token reuse detected. Please log in again.');
   }
-  
+
   // Invalidate old token
   await this.prisma.refreshToken.delete({ where: { jti: payload.jti } });
-  
+
   // Issue new pair with same family
   return this.generateTokenPair(payload.sub, payload.family);
 }
@@ -162,12 +162,12 @@ async refreshToken(oldRefreshToken: string) {
 
 ## 4. Password Security
 
-| Property | Value |
-|----------|-------|
-| Hashing | bcrypt |
-| Salt rounds | 12 |
-| Min length | 8 characters |
-| Complexity | 1 uppercase, 1 number, 1 special character |
+| Property    | Value                                      |
+| ----------- | ------------------------------------------ |
+| Hashing     | bcrypt                                     |
+| Salt rounds | 12                                         |
+| Min length  | 8 characters                               |
+| Complexity  | 1 uppercase, 1 number, 1 special character |
 
 ```typescript
 // Registration
@@ -183,28 +183,28 @@ const isValid = await bcrypt.compare(dto.password, user.passwordHash);
 
 ### 5.1 Workspace Roles
 
-| Role | Permissions |
-|------|------------|
-| **OWNER** | Full access. Manage members, billing, delete workspace |
-| **ADMIN** | Full access to content pipeline. Manage members (not billing) |
+| Role       | Permissions                                                    |
+| ---------- | -------------------------------------------------------------- |
+| **OWNER**  | Full access. Manage members, billing, delete workspace         |
+| **ADMIN**  | Full access to content pipeline. Manage members (not billing)  |
 | **MEMBER** | Read/write content pipeline. Cannot manage members or settings |
 
 ### 5.2 Permission Matrix
 
-| Action | OWNER | ADMIN | MEMBER |
-|--------|-------|-------|--------|
-| View dashboard | ✅ | ✅ | ✅ |
-| Ingest sources | ✅ | ✅ | ✅ |
-| Manage render profiles | ✅ | ✅ | ✅ |
-| Trigger renders | ✅ | ✅ | ✅ |
-| Distribute content | ✅ | ✅ | ✅ |
-| Connect accounts | ✅ | ✅ | ❌ |
-| Manage clusters | ✅ | ✅ | ❌ |
-| Invite members | ✅ | ✅ | ❌ |
-| Remove members | ✅ | ✅ | ❌ |
-| Change member roles | ✅ | ❌ | ❌ |
-| Workspace settings | ✅ | ❌ | ❌ |
-| Delete workspace | ✅ | ❌ | ❌ |
+| Action                 | OWNER | ADMIN | MEMBER |
+| ---------------------- | ----- | ----- | ------ |
+| View dashboard         | ✅    | ✅    | ✅     |
+| Ingest sources         | ✅    | ✅    | ✅     |
+| Manage render profiles | ✅    | ✅    | ✅     |
+| Trigger renders        | ✅    | ✅    | ✅     |
+| Distribute content     | ✅    | ✅    | ✅     |
+| Connect accounts       | ✅    | ✅    | ❌     |
+| Manage clusters        | ✅    | ✅    | ❌     |
+| Invite members         | ✅    | ✅    | ❌     |
+| Remove members         | ✅    | ✅    | ❌     |
+| Change member roles    | ✅    | ❌    | ❌     |
+| Workspace settings     | ✅    | ❌    | ❌     |
+| Delete workspace       | ✅    | ❌    | ❌     |
 
 ### 5.3 Guard Implementation
 
@@ -220,19 +220,19 @@ export class RolesGuard implements CanActivate {
       'roles',
       [context.getHandler(), context.getClass()],
     );
-    
+
     if (!requiredRoles) return true;
 
     const request = context.switchToHttp().getRequest();
     const user = request.user;
     const workspaceId = request.headers['x-workspace-id'] || user.defaultWorkspaceId;
-    
+
     const membership = user.workspaces.find(
       (ws: any) => ws.id === workspaceId,
     );
-    
+
     if (!membership) return false;
-    
+
     return requiredRoles.includes(membership.role);
   }
 }
@@ -258,25 +258,25 @@ Every request to a resource endpoint must be scoped to a workspace:
 export const CurrentWorkspace = createParamDecorator(
   (data: unknown, ctx: ExecutionContext): string => {
     const request = ctx.switchToHttp().getRequest();
-    
+
     // Priority: Header > Default workspace
-    const workspaceId = 
-      request.headers['x-workspace-id'] || 
+    const workspaceId =
+      request.headers['x-workspace-id'] ||
       request.user.workspaces[0]?.id;
-    
+
     if (!workspaceId) {
       throw new ForbiddenException('No workspace context');
     }
-    
+
     // Verify user belongs to this workspace
     const membership = request.user.workspaces.find(
       (ws: any) => ws.id === workspaceId,
     );
-    
+
     if (!membership) {
       throw new ForbiddenException('Not a member of this workspace');
     }
-    
+
     return workspaceId;
   },
 );
@@ -387,24 +387,24 @@ model RefreshToken {
 
 ### 10.1 Unit Tests
 
-| Test | File |
-|------|------|
-| Password hashing and comparison | `auth.service.spec.ts` |
-| JWT generation and verification | `auth.service.spec.ts` |
-| Token family rotation detection | `auth.service.spec.ts` |
-| Role guard logic | `roles.guard.spec.ts` |
-| Workspace resolution decorator | `workspace.decorator.spec.ts` |
+| Test                            | File                          |
+| ------------------------------- | ----------------------------- |
+| Password hashing and comparison | `auth.service.spec.ts`        |
+| JWT generation and verification | `auth.service.spec.ts`        |
+| Token family rotation detection | `auth.service.spec.ts`        |
+| Role guard logic                | `roles.guard.spec.ts`         |
+| Workspace resolution decorator  | `workspace.decorator.spec.ts` |
 
 ### 10.2 Integration Tests
 
-| Test | File |
-|------|------|
-| Register → receive tokens | `auth.e2e-spec.ts` |
-| Login with valid credentials → 200 | `auth.e2e-spec.ts` |
-| Login with invalid password → 401 | `auth.e2e-spec.ts` |
-| Access protected route without token → 401 | `auth.e2e-spec.ts` |
-| Access protected route with expired token → 401 | `auth.e2e-spec.ts` |
-| Refresh token rotation → new tokens | `auth.e2e-spec.ts` |
+| Test                                                       | File               |
+| ---------------------------------------------------------- | ------------------ |
+| Register → receive tokens                                  | `auth.e2e-spec.ts` |
+| Login with valid credentials → 200                         | `auth.e2e-spec.ts` |
+| Login with invalid password → 401                          | `auth.e2e-spec.ts` |
+| Access protected route without token → 401                 | `auth.e2e-spec.ts` |
+| Access protected route with expired token → 401            | `auth.e2e-spec.ts` |
+| Refresh token rotation → new tokens                        | `auth.e2e-spec.ts` |
 | Reuse of rotated refresh token → 401 + family invalidation | `auth.e2e-spec.ts` |
-| MEMBER cannot access ADMIN endpoint → 403 | `auth.e2e-spec.ts` |
-| Rate limiting on login → 429 after 10 attempts | `auth.e2e-spec.ts` |
+| MEMBER cannot access ADMIN endpoint → 403                  | `auth.e2e-spec.ts` |
+| Rate limiting on login → 429 after 10 attempts             | `auth.e2e-spec.ts` |

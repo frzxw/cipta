@@ -9,7 +9,7 @@ labels: ['enhancement']
 
 <!-- Which PRD feature does this relate to? e.g., F-001, F-004, or "new" -->
 
-**PRD Reference:** F-___
+**PRD Reference:** F-\_\_\_
 
 ## Problem
 

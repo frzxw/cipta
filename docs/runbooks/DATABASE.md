@@ -25,11 +25,11 @@ DATABASE_URL="postgresql://cipta:${DB_PASSWORD}@prod-db.internal:5432/cipta?sslm
 
 Prisma manages its own connection pool. Configure via the connection string:
 
-| Parameter | Dev | Production | Notes |
-|-----------|-----|------------|-------|
-| `connection_limit` | 5 | 20 | Per API/Worker instance |
-| `pool_timeout` | 10 | 10 | Seconds to wait for a connection |
-| `connect_timeout` | 5 | 5 | Seconds before connection attempt fails |
+| Parameter          | Dev | Production | Notes                                   |
+| ------------------ | --- | ---------- | --------------------------------------- |
+| `connection_limit` | 5   | 20         | Per API/Worker instance                 |
+| `pool_timeout`     | 10  | 10         | Seconds to wait for a connection        |
+| `connect_timeout`  | 5   | 5          | Seconds before connection attempt fails |
 
 ```
 DATABASE_URL="postgresql://...?connection_limit=20&pool_timeout=10&connect_timeout=5"
@@ -115,6 +115,7 @@ prisma migrate deploy
 **Never drop columns or tables in the same deploy that removes the code.**
 
 Phase 1 (deploy N):
+
 ```prisma
 // Keep the column but stop using it in code
 model User {
@@ -123,6 +124,7 @@ model User {
 ```
 
 Phase 2 (deploy N+1):
+
 ```bash
 # Now safe to drop
 prisma migrate dev --name drop_old_field
@@ -143,12 +145,14 @@ pg_dump -h $DB_HOST -U cipta -d cipta \
 ```
 
 **Backup Schedule (cron):**
+
 ```cron
 # Every 6 hours
 0 */6 * * * /usr/local/bin/backup-cipta.sh >> /var/log/cipta-backup.log 2>&1
 ```
 
 **Retention:**
+
 - Hourly: keep 24
 - Daily: keep 30
 - Weekly: keep 12

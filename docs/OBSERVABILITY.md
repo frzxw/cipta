@@ -47,9 +47,10 @@ export function createLogger(service: string) {
     },
     timestamp: pino.stdTimeFunctions.isoTime,
     // Pretty print in development
-    transport: process.env.LOG_FORMAT === 'pretty'
-      ? { target: 'pino-pretty', options: { colorize: true } }
-      : undefined,
+    transport:
+      process.env.LOG_FORMAT === 'pretty'
+        ? { target: 'pino-pretty', options: { colorize: true } }
+        : undefined,
     // Redact sensitive fields
     redact: {
       paths: [
@@ -91,41 +92,41 @@ export function createLogger(service: string) {
 
 ### 2.3 Log Levels
 
-| Level | Usage | Examples |
-|-------|-------|---------|
-| `fatal` | App cannot continue | DB connection permanently failed, missing encryption key |
-| `error` | Operation failed, needs attention | Job processing error, API endpoint exception |
-| `warn` | Unusual but recoverable | Rate limit approaching, retry attempt, slow query |
-| `info` | Normal operations worth recording | Job completed, user registered, source created |
-| `debug` | Development diagnostics | FFmpeg command details, API request/response bodies |
-| `trace` | Extremely verbose | Function entry/exit, BullMQ internals |
+| Level   | Usage                             | Examples                                                 |
+| ------- | --------------------------------- | -------------------------------------------------------- |
+| `fatal` | App cannot continue               | DB connection permanently failed, missing encryption key |
+| `error` | Operation failed, needs attention | Job processing error, API endpoint exception             |
+| `warn`  | Unusual but recoverable           | Rate limit approaching, retry attempt, slow query        |
+| `info`  | Normal operations worth recording | Job completed, user registered, source created           |
+| `debug` | Development diagnostics           | FFmpeg command details, API request/response bodies      |
+| `trace` | Extremely verbose                 | Function entry/exit, BullMQ internals                    |
 
 ### 2.4 Mandatory Log Events
 
-| Event | Level | Service | When |
-|-------|-------|---------|------|
-| `app.started` | info | all | Application bootstrap complete |
-| `app.shutdown` | info | all | Graceful shutdown initiated |
-| `request.received` | debug | api | Every HTTP request |
-| `request.completed` | info | api | HTTP response sent (with duration) |
-| `request.error` | error | api | Unhandled request error |
-| `auth.login.success` | info | api | Successful login |
-| `auth.login.failure` | warn | api | Failed login attempt |
-| `auth.token.refresh` | debug | api | Token refresh |
-| `auth.token.reuse` | error | api | Refresh token reuse detected |
-| `job.started` | info | worker | Job processing begins |
-| `job.progress` | debug | worker | Job progress update |
-| `job.completed` | info | worker | Job completed successfully |
-| `job.failed` | error | worker | Job processing failed |
-| `job.stalled` | warn | worker | Job detected as stalled |
-| `ffmpeg.command` | debug | worker | FFmpeg command being executed |
-| `ffmpeg.progress` | debug | worker | FFmpeg encoding progress |
-| `ffmpeg.error` | error | worker | FFmpeg process error |
-| `storage.upload` | info | worker | File uploaded to cloud storage |
-| `storage.download` | debug | worker | File downloaded from cloud storage |
-| `platform.publish` | info | worker | Content published to social platform |
-| `platform.error` | error | worker | Platform API error |
-| `db.query.slow` | warn | all | Query exceeding 500ms |
+| Event                | Level | Service | When                                 |
+| -------------------- | ----- | ------- | ------------------------------------ |
+| `app.started`        | info  | all     | Application bootstrap complete       |
+| `app.shutdown`       | info  | all     | Graceful shutdown initiated          |
+| `request.received`   | debug | api     | Every HTTP request                   |
+| `request.completed`  | info  | api     | HTTP response sent (with duration)   |
+| `request.error`      | error | api     | Unhandled request error              |
+| `auth.login.success` | info  | api     | Successful login                     |
+| `auth.login.failure` | warn  | api     | Failed login attempt                 |
+| `auth.token.refresh` | debug | api     | Token refresh                        |
+| `auth.token.reuse`   | error | api     | Refresh token reuse detected         |
+| `job.started`        | info  | worker  | Job processing begins                |
+| `job.progress`       | debug | worker  | Job progress update                  |
+| `job.completed`      | info  | worker  | Job completed successfully           |
+| `job.failed`         | error | worker  | Job processing failed                |
+| `job.stalled`        | warn  | worker  | Job detected as stalled              |
+| `ffmpeg.command`     | debug | worker  | FFmpeg command being executed        |
+| `ffmpeg.progress`    | debug | worker  | FFmpeg encoding progress             |
+| `ffmpeg.error`       | error | worker  | FFmpeg process error                 |
+| `storage.upload`     | info  | worker  | File uploaded to cloud storage       |
+| `storage.download`   | debug | worker  | File downloaded from cloud storage   |
+| `platform.publish`   | info  | worker  | Content published to social platform |
+| `platform.error`     | error | worker  | Platform API error                   |
+| `db.query.slow`      | warn  | all     | Query exceeding 500ms                |
 
 ### 2.5 Request ID Correlation
 
@@ -136,7 +137,7 @@ Every request gets a unique ID that propagates through all logs:
 @Injectable()
 export class RequestIdMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
-    const requestId = req.headers['x-request-id'] as string || `req_${nanoid(12)}`;
+    const requestId = (req.headers['x-request-id'] as string) || `req_${nanoid(12)}`;
     req['requestId'] = requestId;
     res.setHeader('X-Request-Id', requestId);
     next();
@@ -161,36 +162,36 @@ await queue.add('download', {
 
 #### API Metrics
 
-| Metric | Type | Labels |
-|--------|------|--------|
+| Metric                          | Type      | Labels                      |
+| ------------------------------- | --------- | --------------------------- |
 | `http_request_duration_seconds` | Histogram | `method`, `route`, `status` |
-| `http_requests_total` | Counter | `method`, `route`, `status` |
-| `http_active_connections` | Gauge | — |
-| `auth_login_attempts_total` | Counter | `result` (success/failure) |
-| `websocket_connections_active` | Gauge | — |
+| `http_requests_total`           | Counter   | `method`, `route`, `status` |
+| `http_active_connections`       | Gauge     | —                           |
+| `auth_login_attempts_total`     | Counter   | `result` (success/failure)  |
+| `websocket_connections_active`  | Gauge     | —                           |
 
 #### Worker Metrics
 
-| Metric | Type | Labels |
-|--------|------|--------|
-| `job_processing_duration_seconds` | Histogram | `queue`, `type` |
-| `job_completed_total` | Counter | `queue`, `type` |
-| `job_failed_total` | Counter | `queue`, `type`, `error_class` |
-| `queue_depth` | Gauge | `queue`, `state` (waiting/active/delayed) |
-| `ffmpeg_render_duration_seconds` | Histogram | `codec`, `hw_accel` |
-| `variation_generation_duration_seconds` | Histogram | `count` |
-| `storage_upload_bytes_total` | Counter | `bucket` |
-| `storage_download_bytes_total` | Counter | `bucket` |
+| Metric                                  | Type      | Labels                                    |
+| --------------------------------------- | --------- | ----------------------------------------- |
+| `job_processing_duration_seconds`       | Histogram | `queue`, `type`                           |
+| `job_completed_total`                   | Counter   | `queue`, `type`                           |
+| `job_failed_total`                      | Counter   | `queue`, `type`, `error_class`            |
+| `queue_depth`                           | Gauge     | `queue`, `state` (waiting/active/delayed) |
+| `ffmpeg_render_duration_seconds`        | Histogram | `codec`, `hw_accel`                       |
+| `variation_generation_duration_seconds` | Histogram | `count`                                   |
+| `storage_upload_bytes_total`            | Counter   | `bucket`                                  |
+| `storage_download_bytes_total`          | Counter   | `bucket`                                  |
 
 #### Infrastructure Metrics
 
-| Metric | Type | Source |
-|--------|------|--------|
-| `node_memory_usage_bytes` | Gauge | process.memoryUsage() |
-| `node_cpu_usage_percent` | Gauge | process.cpuUsage() |
-| `postgres_active_connections` | Gauge | pg_stat_activity |
-| `redis_memory_used_bytes` | Gauge | Redis INFO |
-| `disk_free_bytes` | Gauge | statfs |
+| Metric                        | Type  | Source                |
+| ----------------------------- | ----- | --------------------- |
+| `node_memory_usage_bytes`     | Gauge | process.memoryUsage() |
+| `node_cpu_usage_percent`      | Gauge | process.cpuUsage()    |
+| `postgres_active_connections` | Gauge | pg_stat_activity      |
+| `redis_memory_used_bytes`     | Gauge | Redis INFO            |
+| `disk_free_bytes`             | Gauge | statfs                |
 
 ### 3.2 Prometheus Endpoint
 
@@ -214,33 +215,33 @@ import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 
 ### 4.1 Critical Alerts (Page Immediately)
 
-| Alert | Condition | Action |
-|-------|-----------|--------|
-| API Down | Health check fails 3× consecutive | Page on-call |
-| Database Down | Connection error for > 1 min | Page on-call |
-| Redis Down | Connection error for > 1 min | Page on-call |
-| Error Rate Spike | > 10% 5xx responses in 5 min | Page on-call |
-| Queue Stuck | Any queue depth > 500 for > 10 min | Page on-call |
+| Alert            | Condition                          | Action       |
+| ---------------- | ---------------------------------- | ------------ |
+| API Down         | Health check fails 3× consecutive  | Page on-call |
+| Database Down    | Connection error for > 1 min       | Page on-call |
+| Redis Down       | Connection error for > 1 min       | Page on-call |
+| Error Rate Spike | > 10% 5xx responses in 5 min       | Page on-call |
+| Queue Stuck      | Any queue depth > 500 for > 10 min | Page on-call |
 
 ### 4.2 Warning Alerts (Slack Notification)
 
-| Alert | Condition | Action |
-|-------|-----------|--------|
-| High Latency | p95 response time > 2s for 5 min | Notify #alerts |
-| Queue Growing | Any queue depth > 100 for > 5 min | Notify #alerts |
-| Disk Space Low | Worker temp dir < 10GB free | Notify #alerts |
-| Redis Memory High | > 80% of maxmemory | Notify #alerts |
-| Failed Jobs Spike | > 20 failed jobs in 1 hour | Notify #alerts |
-| Account Health | Any account status → SUSPENDED | Notify #alerts + user |
-| Slow Query | DB query > 5 seconds | Notify #alerts |
+| Alert             | Condition                         | Action                |
+| ----------------- | --------------------------------- | --------------------- |
+| High Latency      | p95 response time > 2s for 5 min  | Notify #alerts        |
+| Queue Growing     | Any queue depth > 100 for > 5 min | Notify #alerts        |
+| Disk Space Low    | Worker temp dir < 10GB free       | Notify #alerts        |
+| Redis Memory High | > 80% of maxmemory                | Notify #alerts        |
+| Failed Jobs Spike | > 20 failed jobs in 1 hour        | Notify #alerts        |
+| Account Health    | Any account status → SUSPENDED    | Notify #alerts + user |
+| Slow Query        | DB query > 5 seconds              | Notify #alerts        |
 
 ### 4.3 Info Alerts (Dashboard Only)
 
-| Alert | Condition |
-|-------|-----------|
-| Deploy completed | CI/CD pipeline success |
+| Alert             | Condition                     |
+| ----------------- | ----------------------------- |
+| Deploy completed  | CI/CD pipeline success        |
 | Migration applied | Prisma migrate deploy success |
-| Usage milestone | 1000th source ingested, etc. |
+| Usage milestone   | 1000th source ingested, etc.  |
 
 ---
 
@@ -293,7 +294,7 @@ export function setupBullBoard(app, queues: Queue[]) {
   serverAdapter.setBasePath('/admin/queues');
 
   createBullBoard({
-    queues: queues.map(q => new BullMQAdapter(q)),
+    queues: queues.map((q) => new BullMQAdapter(q)),
     serverAdapter,
   });
 
@@ -362,6 +363,7 @@ async healthCheck() {
 ```
 
 **Response (healthy):**
+
 ```json
 {
   "status": "healthy",
@@ -404,9 +406,9 @@ services:
 
 ### Option B: Cloud-Native
 
-| Provider | Service | Cost |
-|----------|---------|------|
-| Vercel | Vercel Logs (frontend) | Included |
-| Betterstack (Logtail) | Log aggregation | Free tier available |
-| Datadog | Full observability | $$$, best for scale |
-| AWS CloudWatch | Logs + Metrics | Pay-per-use |
+| Provider              | Service                | Cost                |
+| --------------------- | ---------------------- | ------------------- |
+| Vercel                | Vercel Logs (frontend) | Included            |
+| Betterstack (Logtail) | Log aggregation        | Free tier available |
+| Datadog               | Full observability     | $$$, best for scale |
+| AWS CloudWatch        | Logs + Metrics         | Pay-per-use         |

@@ -62,6 +62,12 @@ importers:
         specifier: ^7.8.1
         version: 7.8.2
     devDependencies:
+      '@cipta/eslint-config':
+        specifier: workspace:*
+        version: link:../../packages/eslint-config
+      '@cipta/typescript-config':
+        specifier: workspace:*
+        version: link:../../packages/typescript-config
       '@eslint/eslintrc':
         specifier: ^3.2.0
         version: 3.3.1
@@ -134,7 +140,7 @@ importers:
 
   apps/docs:
     dependencies:
-      '@repo/ui':
+      '@cipta/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       next:
@@ -147,10 +153,10 @@ importers:
         specifier: ^19.2.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@repo/eslint-config':
+      '@cipta/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/typescript-config':
+      '@cipta/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
@@ -171,7 +177,7 @@ importers:
 
   apps/web:
     dependencies:
-      '@repo/ui':
+      '@cipta/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       next:
@@ -184,10 +190,10 @@ importers:
         specifier: ^19.2.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@repo/eslint-config':
+      '@cipta/eslint-config':
         specifier: workspace:*
         version: link:../../packages/eslint-config
-      '@repo/typescript-config':
+      '@cipta/typescript-config':
         specifier: workspace:*
         version: link:../../packages/typescript-config
       '@types/node':
@@ -212,7 +218,7 @@ importers:
         specifier: ^6.9.0
         version: 6.19.3(prisma@6.19.3(typescript@5.9.2))(typescript@5.9.2)
     devDependencies:
-      '@repo/typescript-config':
+      '@cipta/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       prisma:
@@ -269,10 +275,10 @@ importers:
         specifier: ^19.2.0
         version: 19.2.0(react@19.2.0)
     devDependencies:
-      '@repo/eslint-config':
+      '@cipta/eslint-config':
         specifier: workspace:*
         version: link:../eslint-config
-      '@repo/typescript-config':
+      '@cipta/typescript-config':
         specifier: workspace:*
         version: link:../typescript-config
       '@types/node':

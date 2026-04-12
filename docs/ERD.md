@@ -703,6 +703,7 @@ model Job {
 ### 3.1 UUID Primary Keys
 
 All tables use UUIDs (`@default(uuid())`) instead of auto-incrementing integers. Rationale:
+
 - Safe for distributed systems (Worker can generate IDs independently)
 - No information leakage about record counts
 - Merge-friendly across environments
@@ -732,6 +733,7 @@ Any stage can transition to `FAILED` from any active state.
 ### 3.5 Index Strategy
 
 Indexes are placed on:
+
 - All `workspaceId` columns (multi-tenancy filter)
 - Compound indexes on `(workspaceId, status)` for dashboard queries
 - `scheduledAt` for distribution scheduling queries

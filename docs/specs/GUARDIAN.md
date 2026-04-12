@@ -27,18 +27,18 @@ Rendered Asset → [Guardian Pipeline × N] → N Unique Variations
 
 ### 2.1 Technique Matrix
 
-| Technique | Range | Perceptible? | Hash Impact |
-|-----------|-------|-------------|-------------|
-| Metadata Stripping | 100% removal | No | Medium |
-| Metadata Spoofing | Device simulation | No | Low |
-| Bitstream Jittering | ±0.5–1.5% bitrate | No | High |
-| Frame Zoom/Crop | 0.3–1.0% zoom | No | High |
-| Color Micro-Shift | ±1–3 units (HSL) | No | High |
-| Noise Overlay | 0.5–1.5% opacity | No | Medium |
-| Audio Pitch Shift | ±0.1–0.3% | No | High |
-| Frame Rate Micro-Shift | ±0.01 fps | No | Medium |
-| GOP Length Variation | ±2–5 frames | No | High |
-| Start/End Trim | ±0.1–0.5 frames | No | Medium |
+| Technique              | Range             | Perceptible? | Hash Impact |
+| ---------------------- | ----------------- | ------------ | ----------- |
+| Metadata Stripping     | 100% removal      | No           | Medium      |
+| Metadata Spoofing      | Device simulation | No           | Low         |
+| Bitstream Jittering    | ±0.5–1.5% bitrate | No           | High        |
+| Frame Zoom/Crop        | 0.3–1.0% zoom     | No           | High        |
+| Color Micro-Shift      | ±1–3 units (HSL)  | No           | High        |
+| Noise Overlay          | 0.5–1.5% opacity  | No           | Medium      |
+| Audio Pitch Shift      | ±0.1–0.3%         | No           | High        |
+| Frame Rate Micro-Shift | ±0.01 fps         | No           | Medium      |
+| GOP Length Variation   | ±2–5 frames       | No           | High        |
+| Start/End Trim         | ±0.1–0.5 frames   | No           | Medium      |
 
 ### 2.2 Randomization Seed
 
@@ -47,20 +47,20 @@ Each variation gets a unique random seed that deterministically generates all pa
 ```typescript
 interface GuardianParams {
   seed: number;
-  zoomPercent: number;          // 0.3 - 1.0
-  zoomOffsetX: number;          // pixel offset, centered
-  zoomOffsetY: number;          // pixel offset, centered
+  zoomPercent: number; // 0.3 - 1.0
+  zoomOffsetX: number; // pixel offset, centered
+  zoomOffsetY: number; // pixel offset, centered
   colorShift: {
-    hue: number;                // -3 to +3
-    saturation: number;         // -2 to +2
-    brightness: number;         // -1 to +1
+    hue: number; // -3 to +3
+    saturation: number; // -2 to +2
+    brightness: number; // -1 to +1
   };
   bitrateJitterPercent: number; // -1.5 to +1.5
-  noiseOpacity: number;         // 0.005 to 0.015
-  audioPitchShift: number;      // -0.3 to +0.3 percent
-  gopLength: number;            // base ± 2-5
-  startTrimMs: number;          // 0 to 50ms
-  endTrimMs: number;            // 0 to 50ms
+  noiseOpacity: number; // 0.005 to 0.015
+  audioPitchShift: number; // -0.3 to +0.3 percent
+  gopLength: number; // base ± 2-5
+  startTrimMs: number; // 0 to 50ms
+  endTrimMs: number; // 0 to 50ms
 }
 ```
 
@@ -79,11 +79,11 @@ ffmpeg -y \
     # 1. Random zoom/crop
     scale=iw*${1+ZOOM_PERCENT/100}:ih*${1+ZOOM_PERCENT/100}:flags=lanczos,
     crop=1080:1920:${OFFSET_X}:${OFFSET_Y},
-    
+
     # 2. Color micro-shift
     eq=brightness=${BRIGHTNESS}:saturation=${1+SATURATION/100},
     hue=h=${HUE_SHIFT},
-    
+
     # 3. Invisible noise overlay
     noise=alls=${NOISE_STRENGTH}:allf=t
   " \
@@ -174,21 +174,22 @@ function getRandomDeviceProfile(): DeviceProfile {
 
 ### 4.1 `guardian.generate-variations`
 
-| Field | Value |
-|-------|-------|
-| Queue | `guardian-queue` |
-| Type | `generate-variations` |
-| Priority | Normal |
-| Retries | 1 |
-| Timeout | 30 minutes (for large batches) |
-| Concurrency | 5 |
+| Field       | Value                          |
+| ----------- | ------------------------------ |
+| Queue       | `guardian-queue`               |
+| Type        | `generate-variations`          |
+| Priority    | Normal                         |
+| Retries     | 1                              |
+| Timeout     | 30 minutes (for large batches) |
+| Concurrency | 5                              |
 
 **Payload:**
+
 ```typescript
 interface VariationJobPayload {
   assetId: string;
   workspaceId: string;
-  variationCount: number;        // 1-100
+  variationCount: number; // 1-100
   guardianConfig?: {
     enableMetadataSpoofing: boolean;
     enableBitstreamJitter: boolean;
@@ -200,6 +201,7 @@ interface VariationJobPayload {
 ```
 
 **Processing Steps:**
+
 1. Download rendered Asset from Cloud Storage
 2. Generate `variationCount` unique `GuardianParams` (one per seed)
 3. For each variation (parallelized, max 3 concurrent FFmpeg processes):
@@ -215,11 +217,11 @@ interface VariationJobPayload {
 
 ### 4.2 Quality Presets
 
-| Preset | Zoom | Color | Noise | Bitrate | Audio |
-|--------|------|-------|-------|---------|-------|
-| `conservative` | 0.3-0.5% | ±1 | 0.5% | ±0.5% | ±0.1% |
-| `balanced` | 0.5-0.8% | ±2 | 1.0% | ±1.0% | ±0.2% |
-| `aggressive` | 0.8-1.0% | ±3 | 1.5% | ±1.5% | ±0.3% |
+| Preset         | Zoom     | Color | Noise | Bitrate | Audio |
+| -------------- | -------- | ----- | ----- | ------- | ----- |
+| `conservative` | 0.3-0.5% | ±1    | 0.5%  | ±0.5%   | ±0.1% |
+| `balanced`     | 0.5-0.8% | ±2    | 1.0%  | ±1.0%   | ±0.2% |
+| `aggressive`   | 0.8-1.0% | ±3    | 1.5%  | ±1.5%   | ±0.3% |
 
 ---
 
@@ -254,16 +256,16 @@ async function generateUniqueVariation(
     const params = generateRandomParams(Date.now() + attempt);
     const outputPath = await renderVariation(inputPath, params);
     const hash = await computeMD5(outputPath);
-    
+
     if (!existingHashes.has(hash)) {
       existingHashes.add(hash);
       return { outputPath, hash, params };
     }
-    
+
     // Hash collision — extremely unlikely but handle it
     await fs.unlink(outputPath);
   }
-  
+
   throw new Error('Failed to generate unique hash after max attempts');
 }
 ```
@@ -277,7 +279,7 @@ import { randomInt, randomFloat } from './utils';
 
 function generateRandomParams(seed: number): GuardianParams {
   const rng = createSeededRNG(seed);
-  
+
   return {
     seed,
     zoomPercent: rng.float(0.3, 1.0),
@@ -316,16 +318,16 @@ async function generateBatch(
 ): Promise<Variation[]> {
   const hashes = new Set<string>();
   const results: Variation[] = [];
-  
+
   const tasks = Array.from({ length: count }, (_, i) =>
     limit(async () => {
       const variation = await generateUniqueVariation(inputPath, hashes);
       results.push(variation);
       onProgress(results.length, count);
       return variation;
-    })
+    }),
   );
-  
+
   await Promise.all(tasks);
   return results;
 }
@@ -337,23 +339,23 @@ async function generateBatch(
 
 ### 8.1 Unit Tests
 
-| Test | Assertion |
-|------|-----------|
-| Parameter generation produces values within valid ranges | All params within defined bounds |
-| Different seeds produce different parameters | No two param sets identical |
-| MD5 hash computation | Known file → known hash |
+| Test                                                      | Assertion                           |
+| --------------------------------------------------------- | ----------------------------------- |
+| Parameter generation produces values within valid ranges  | All params within defined bounds    |
+| Different seeds produce different parameters              | No two param sets identical         |
+| MD5 hash computation                                      | Known file → known hash             |
 | FFmpeg command construction includes all variation params | Command string contains all filters |
-| Device profile selection is random | Distribution across profiles |
+| Device profile selection is random                        | Distribution across profiles        |
 
 ### 8.2 Integration Tests
 
-| Test | Assertion |
-|------|-----------|
-| Generate 5 variations of a test video | 5 unique MD5 hashes |
-| SSIM between original and variation ≥ 0.98 | Quality maintained |
-| Metadata is fully stripped from output | No original EXIF data |
-| Spoofed metadata matches a device profile | `ffprobe` shows correct tags |
-| Batch processing respects concurrency limit | Max 3 FFmpeg processes |
+| Test                                        | Assertion                    |
+| ------------------------------------------- | ---------------------------- |
+| Generate 5 variations of a test video       | 5 unique MD5 hashes          |
+| SSIM between original and variation ≥ 0.98  | Quality maintained           |
+| Metadata is fully stripped from output      | No original EXIF data        |
+| Spoofed metadata matches a device profile   | `ffprobe` shows correct tags |
+| Batch processing respects concurrency limit | Max 3 FFmpeg processes       |
 
 ### 8.3 SSIM Verification Command
 

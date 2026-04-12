@@ -159,7 +159,7 @@ You can extend from config packages instead of just root:
 ```json
 // packages/web/turbo.json
 {
-  "extends": ["//", "@repo/turbo-config"]
+  "extends": ["//", "@cipta/turbo-config"]
 }
 ```
 

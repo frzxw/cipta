@@ -12,13 +12,13 @@ Cipta follows a **modular monorepo** architecture managed by **Turborepo** with 
 
 ### Design Principles
 
-| Principle | Description |
-|-----------|-------------|
-| **Strict Decoupling** | The Worker NEVER imports NestJS modules. Communication is exclusively via BullMQ. |
-| **Shared Schema, Isolated Runtime** | Prisma schema lives in `packages/database` and is consumed by both `apps/api` and `apps/worker` as a dependency. |
-| **Queue-Driven Pipeline** | Every long-running operation is a BullMQ job. The API never processes media directly. |
-| **Future-Proof Boundaries** | Module boundaries are drawn so the Node.js Worker can be replaced by Rust/Go without touching the API or Frontend. |
-| **Feature-Module Architecture** | NestJS organizes by feature (not technical layer). Each domain concept is a self-contained module. |
+| Principle                           | Description                                                                                                        |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| **Strict Decoupling**               | The Worker NEVER imports NestJS modules. Communication is exclusively via BullMQ.                                  |
+| **Shared Schema, Isolated Runtime** | Prisma schema lives in `packages/database` and is consumed by both `apps/api` and `apps/worker` as a dependency.   |
+| **Queue-Driven Pipeline**           | Every long-running operation is a BullMQ job. The API never processes media directly.                              |
+| **Future-Proof Boundaries**         | Module boundaries are drawn so the Node.js Worker can be replaced by Rust/Go without touching the API or Frontend. |
+| **Feature-Module Architecture**     | NestJS organizes by feature (not technical layer). Each domain concept is a self-contained module.                 |
 
 ---
 
@@ -172,18 +172,18 @@ packages/ui ───► packages/shared (types only)
 
 ### 4.1 Frontend ↔ API (Synchronous)
 
-| Channel | Protocol | Use Case |
-|---------|----------|----------|
-| REST API | HTTPS (JSON) | CRUD operations, authentication, configuration |
-| WebSocket | WS (Socket.IO or native) | Real-time job progress, notifications |
-| SSE | HTTPS (text/event-stream) | Alternative to WebSocket for job progress (simpler) |
+| Channel   | Protocol                  | Use Case                                            |
+| --------- | ------------------------- | --------------------------------------------------- |
+| REST API  | HTTPS (JSON)              | CRUD operations, authentication, configuration      |
+| WebSocket | WS (Socket.IO or native)  | Real-time job progress, notifications               |
+| SSE       | HTTPS (text/event-stream) | Alternative to WebSocket for job progress (simpler) |
 
 ### 4.2 API ↔ Worker (Asynchronous)
 
-| Channel | Technology | Use Case |
-|---------|-----------|----------|
-| Job Queue | Redis + BullMQ | Dispatch processing jobs (ingest, render, distribute) |
-| Job Events | BullMQ Events | Progress updates, completion, failure callbacks |
+| Channel    | Technology     | Use Case                                              |
+| ---------- | -------------- | ----------------------------------------------------- |
+| Job Queue  | Redis + BullMQ | Dispatch processing jobs (ingest, render, distribute) |
+| Job Events | BullMQ Events  | Progress updates, completion, failure callbacks       |
 
 **Queue Design:**
 
@@ -370,13 +370,13 @@ export class IngestorService {
 
 ### 6.1 Design Constraints
 
-| Constraint | Rationale |
-|-----------|-----------|
-| **Zero NestJS imports** | Worker must be replaceable with Rust/Go |
-| **BullMQ only communication** | No direct HTTP calls to the API |
-| **Shared types via `@cipta/shared`** | Type safety without runtime coupling |
-| **Shared DB via `@cipta/database`** | Direct Prisma access for status updates |
-| **Stateless processing** | Any Worker instance can handle any job |
+| Constraint                           | Rationale                               |
+| ------------------------------------ | --------------------------------------- |
+| **Zero NestJS imports**              | Worker must be replaceable with Rust/Go |
+| **BullMQ only communication**        | No direct HTTP calls to the API         |
+| **Shared types via `@cipta/shared`** | Type safety without runtime coupling    |
+| **Shared DB via `@cipta/database`**  | Direct Prisma access for status updates |
+| **Stateless processing**             | Any Worker instance can handle any job  |
 
 ### 6.2 Worker Entrypoint
 
@@ -394,16 +394,15 @@ const redis = { host: process.env.REDIS_HOST, port: +process.env.REDIS_PORT };
 const prisma = new PrismaClient();
 
 // One BullMQ Worker per queue
-const ingestorWorker = new BullWorker(
-  QUEUE_NAMES.INGESTOR,
-  new IngestorProcessor(prisma).process,
-  { connection: redis, concurrency: 3 }
-);
+const ingestorWorker = new BullWorker(QUEUE_NAMES.INGESTOR, new IngestorProcessor(prisma).process, {
+  connection: redis,
+  concurrency: 3,
+});
 
 const factoryWorker = new BullWorker(
   QUEUE_NAMES.FACTORY,
   new FactoryProcessor(prisma).process,
-  { connection: redis, concurrency: 2 }  // CPU-heavy, lower concurrency
+  { connection: redis, concurrency: 2 }, // CPU-heavy, lower concurrency
 );
 
 // ... guardian, fleet workers similarly
@@ -440,15 +439,15 @@ Full schema definition: [`docs/ERD.md`](./ERD.md)
 
 ### 8.1 Development Environment
 
-| Component | Technology |
-|-----------|-----------|
-| Runtime | Node.js 22 LTS |
-| Package Manager | pnpm 9.x |
-| Build System | Turborepo |
-| Database | PostgreSQL 16 (Docker) |
-| Message Broker | Redis 7+ (Docker) |
+| Component        | Technology                 |
+| ---------------- | -------------------------- |
+| Runtime          | Node.js 22 LTS             |
+| Package Manager  | pnpm 9.x                   |
+| Build System     | Turborepo                  |
+| Database         | PostgreSQL 16 (Docker)     |
+| Message Broker   | Redis 7+ (Docker)          |
 | Video Processing | FFmpeg 7+ (system install) |
-| Media Download | yt-dlp (system install) |
+| Media Download   | yt-dlp (system install)    |
 
 ### 8.2 Docker Compose (Development)
 
@@ -508,15 +507,15 @@ volumes:
 
 ## 9. Security Architecture
 
-| Layer | Implementation |
-|-------|---------------|
-| **Authentication** | JWT (access + refresh tokens) via Passport.js |
-| **Authorization** | Role-based (Owner, Admin, Member) via NestJS Guards |
-| **Input Validation** | `class-validator` + `class-transformer` on all DTOs |
-| **Rate Limiting** | `@nestjs/throttler` — 100 req/min per user |
-| **CORS** | Strict origin whitelist |
-| **Data Isolation** | Workspace-scoped queries on every DB operation |
-| **Secrets** | Environment variables via `@nestjs/config` — never committed |
+| Layer                | Implementation                                               |
+| -------------------- | ------------------------------------------------------------ |
+| **Authentication**   | JWT (access + refresh tokens) via Passport.js                |
+| **Authorization**    | Role-based (Owner, Admin, Member) via NestJS Guards          |
+| **Input Validation** | `class-validator` + `class-transformer` on all DTOs          |
+| **Rate Limiting**    | `@nestjs/throttler` — 100 req/min per user                   |
+| **CORS**             | Strict origin whitelist                                      |
+| **Data Isolation**   | Workspace-scoped queries on every DB operation               |
+| **Secrets**          | Environment variables via `@nestjs/config` — never committed |
 
 See [`docs/specs/AUTH.md`](./specs/AUTH.md) for detailed auth specification.
 
@@ -524,14 +523,14 @@ See [`docs/specs/AUTH.md`](./specs/AUTH.md) for detailed auth specification.
 
 ## 10. Observability
 
-| Concern | Tool | Location |
-|---------|------|----------|
-| API Logging | Structured JSON (pino/winston) | `apps/api` |
-| Worker Logging | Structured JSON | `apps/worker` |
-| Job Monitoring | Bull Board | Embedded in API at `/admin/queues` |
-| Error Tracking | Sentry (future) | All apps |
-| Metrics | Prometheus + Grafana (future) | Infrastructure |
-| Tracing | Correlation IDs in all logs | `X-Request-Id` header |
+| Concern        | Tool                           | Location                           |
+| -------------- | ------------------------------ | ---------------------------------- |
+| API Logging    | Structured JSON (pino/winston) | `apps/api`                         |
+| Worker Logging | Structured JSON                | `apps/worker`                      |
+| Job Monitoring | Bull Board                     | Embedded in API at `/admin/queues` |
+| Error Tracking | Sentry (future)                | All apps                           |
+| Metrics        | Prometheus + Grafana (future)  | Infrastructure                     |
+| Tracing        | Correlation IDs in all logs    | `X-Request-Id` header              |
 
 ---
 

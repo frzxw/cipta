@@ -12,9 +12,9 @@
 
 <!-- Which doc/spec/feature does this implement or fix? -->
 
-- [ ] `docs/PRD.md` Feature: F-___
-- [ ] `docs/specs/___.md` Section: §___
-- [ ] Acceptance Criteria: AC-___.___
+- [ ] `docs/PRD.md` Feature: F-\_\_\_
+- [ ] `docs/specs/___.md` Section: §\_\_\_
+- [ ] Acceptance Criteria: AC-**_._**
 - [ ] N/A (infra, chore, etc.)
 
 ## Type of Change

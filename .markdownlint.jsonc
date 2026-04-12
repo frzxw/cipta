@@ -8,5 +8,5 @@
   // Allow inline HTML (used in agent workflow files)
   "MD033": false,
   // Allow bare URLs
-  "MD034": false
+  "MD034": false,
 }

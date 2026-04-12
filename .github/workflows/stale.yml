@@ -29,7 +29,6 @@ jobs:
             This issue was closed because it has been stale for 7 days with no activity.
             Feel free to reopen if it's still relevant.
           exempt-issue-labels: 'pinned,security,P0'
-
           # Pull Requests
           days-before-pr-stale: 14
           days-before-pr-close: 7
@@ -41,6 +40,5 @@ jobs:
           close-pr-message: >
             This PR was closed because it has been stale for 7 days with no activity.
           exempt-pr-labels: 'WIP,do-not-close'
-
           # Limits
           operations-per-run: 30
