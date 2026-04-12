@@ -1,0 +1,29 @@
+# Auto-assign reviewers based on changed packages.
+# GitHub CODEOWNERS — these users are auto-requested for review.
+
+# Default — catch-all
+*                           @frzxw
+
+# Core infrastructure
+turbo.json                  @frzxw
+pnpm-workspace.yaml         @frzxw
+docker-compose*.yml         @frzxw
+.github/                    @frzxw
+
+# API (NestJS)
+apps/api/                   @frzxw
+
+# Worker (BullMQ)
+apps/worker/                @frzxw
+
+# Frontend (Next.js)
+apps/web/                   @frzxw
+
+# Database (Prisma)
+packages/database/          @frzxw
+
+# Shared types/contracts
+packages/shared/            @frzxw
+
+# Documentation
+docs/                       @frzxw
