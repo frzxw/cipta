@@ -1,0 +1,12 @@
+{
+  // Default: all rules enabled
+  "default": true,
+  // Allow long lines (agents write long directive lines)
+  "MD013": false,
+  // Allow multiple top-level headings (common in agent directives)
+  "MD025": false,
+  // Allow inline HTML (used in agent workflow files)
+  "MD033": false,
+  // Allow bare URLs
+  "MD034": false
+}
