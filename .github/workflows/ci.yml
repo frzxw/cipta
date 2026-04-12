@@ -1,0 +1,161 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop, main]
+  push:
+    branches: [develop, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9'
+
+jobs:
+  # ─────────────────────────────────────────────
+  # Stage 1: Fast checks (run in parallel)
+  # ─────────────────────────────────────────────
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+
+  type-check:
+    name: Type Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cipta/database exec prisma generate
+      - run: pnpm check-types
+
+  format-check:
+    name: Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm format --check
+
+  # ─────────────────────────────────────────────
+  # Stage 2: Unit tests (parallel per package)
+  # ─────────────────────────────────────────────
+  unit-tests:
+    name: 'Test: ${{ matrix.package }}'
+    runs-on: ubuntu-latest
+    needs: [lint, type-check]
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - package: shared
+            filter: '@cipta/shared'
+            coverage-path: 'packages/shared/coverage'
+          - package: api
+            filter: 'api'
+            coverage-path: 'apps/api/coverage'
+          - package: worker
+            filter: 'worker'
+            coverage-path: 'apps/worker/coverage'
+          - package: web
+            filter: 'web'
+            coverage-path: 'apps/web/coverage'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cipta/database exec prisma generate
+
+      - name: Run tests
+        run: pnpm --filter ${{ matrix.filter }} test -- --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.package }}
+          path: ${{ matrix.coverage-path }}
+          retention-days: 7
+
+  # ─────────────────────────────────────────────
+  # Stage 3: Integration tests (needs services)
+  # ─────────────────────────────────────────────
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: cipta_test
+          POSTGRES_USER: cipta
+          POSTGRES_PASSWORD: cipta_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U cipta"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://cipta:cipta_test@localhost:5432/cipta_test
+      REDIS_HOST: localhost
+      REDIS_PORT: '6379'
+      JWT_ACCESS_SECRET: ci-test-access-secret-that-is-long-enough-for-256-bits-xxxxxxx
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-that-is-long-enough-for-256-bits-xxxxxx
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cipta/database exec prisma generate
+      - run: pnpm --filter @cipta/database exec prisma migrate deploy
+      - run: pnpm --filter api test:e2e
+
+  # ─────────────────────────────────────────────
+  # Stage 4: Build verification
+  # ─────────────────────────────────────────────
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: [unit-tests]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with: { version: '${{ env.PNPM_VERSION }}' }
+      - uses: actions/setup-node@v4
+        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cipta/database exec prisma generate
+      - run: pnpm build

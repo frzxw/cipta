@@ -1,0 +1,95 @@
+name: E2E Tests
+
+on:
+  pull_request:
+    branches: [develop, main]
+    # Only run E2E when frontend or API code changes
+    paths:
+      - 'apps/web/**'
+      - 'apps/api/**'
+      - 'packages/ui/**'
+      - 'e2e/**'
+      - 'playwright.config.ts'
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '9'
+
+jobs:
+  e2e:
+    name: Playwright E2E
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: cipta_test
+          POSTGRES_USER: cipta
+          POSTGRES_PASSWORD: cipta_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U cipta"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://cipta:cipta_test@localhost:5432/cipta_test
+      REDIS_HOST: localhost
+      REDIS_PORT: 6379
+      JWT_ACCESS_SECRET: ci-test-access-secret-that-is-long-enough-for-256-bits-xxxxxxx
+      JWT_REFRESH_SECRET: ci-test-refresh-secret-that-is-long-enough-for-256-bits-xxxxxx
+      API_PORT: 3001
+      NEXT_PUBLIC_API_URL: http://localhost:3001
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cipta/database exec prisma generate
+      - run: pnpm --filter @cipta/database exec prisma migrate deploy
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Build apps
+        run: pnpm build
+
+      - name: Run E2E tests
+        run: pnpm exec playwright test
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: e2e/screenshots/
+          retention-days: 14
