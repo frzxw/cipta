@@ -7,24 +7,24 @@
 
 ## Runbook Index
 
-| Runbook | When To Use |
-|---------|-------------|
-| [DEPLOYMENT.md](./DEPLOYMENT.md) | Deploying to staging/production, rollback procedures |
-| [DATABASE.md](./DATABASE.md) | Migrations, backups, restores, connection issues, Prisma operations |
-| [WORKER_OPS.md](./WORKER_OPS.md) | Scaling workers, stuck/stalled jobs, queue management, FFmpeg failures |
-| [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md) | Outage triage, severity classification, communication templates |
-| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | Common errors, diagnostic commands, platform-specific debugging |
+| Runbook                                        | When To Use                                                            |
+| ---------------------------------------------- | ---------------------------------------------------------------------- |
+| [DEPLOYMENT.md](./DEPLOYMENT.md)               | Deploying to staging/production, rollback procedures                   |
+| [DATABASE.md](./DATABASE.md)                   | Migrations, backups, restores, connection issues, Prisma operations    |
+| [WORKER_OPS.md](./WORKER_OPS.md)               | Scaling workers, stuck/stalled jobs, queue management, FFmpeg failures |
+| [INCIDENT_RESPONSE.md](./INCIDENT_RESPONSE.md) | Outage triage, severity classification, communication templates        |
+| [TROUBLESHOOTING.md](./TROUBLESHOOTING.md)     | Common errors, diagnostic commands, platform-specific debugging        |
 
 ---
 
 ## Severity Levels
 
-| Level | Definition | Response Time | Example |
-|-------|-----------|---------------|---------|
-| **SEV-1** | Platform down, all users affected | < 15 min | API unreachable, DB down |
-| **SEV-2** | Major feature broken, many users affected | < 1 hour | Worker queue backed up, no renders |
-| **SEV-3** | Minor feature broken, workaround exists | < 4 hours | One platform publisher failing |
-| **SEV-4** | Cosmetic / non-urgent | Next business day | Dashboard UI glitch |
+| Level     | Definition                                | Response Time     | Example                            |
+| --------- | ----------------------------------------- | ----------------- | ---------------------------------- |
+| **SEV-1** | Platform down, all users affected         | < 15 min          | API unreachable, DB down           |
+| **SEV-2** | Major feature broken, many users affected | < 1 hour          | Worker queue backed up, no renders |
+| **SEV-3** | Minor feature broken, workaround exists   | < 4 hours         | One platform publisher failing     |
+| **SEV-4** | Cosmetic / non-urgent                     | Next business day | Dashboard UI glitch                |
 
 ---
 

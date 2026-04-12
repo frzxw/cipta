@@ -14,6 +14,7 @@ Error: ENOENT: no such file or directory, open 'pnpm-lock.yaml'
 ```
 
 **Fix:**
+
 ```bash
 # Ensure you're in the repo root
 pnpm install
@@ -32,6 +33,7 @@ Cannot find module '@cipta/database' or its corresponding type declarations
 ```
 
 **Fix:**
+
 ```bash
 pnpm --filter @cipta/database exec prisma generate
 ```
@@ -45,6 +47,7 @@ ERROR: for postgres  Cannot start service postgres: port is already allocated
 ```
 
 **Fix:**
+
 ```bash
 # Check what's using the port
 # Windows:
@@ -66,6 +69,7 @@ Build produces stale output / changes not reflected
 ```
 
 **Fix:**
+
 ```bash
 # Clear turbo cache
 pnpm exec turbo run build --force
@@ -88,6 +92,7 @@ Error: Nest can't resolve dependencies of the XxxService
 **Diagnosis:** A service's dependency isn't registered in its module.
 
 **Fix:**
+
 1. Check the module's `providers` array includes all services
 2. Check `imports` includes modules that export needed providers
 3. Ensure `@Injectable()` decorator is on the service class
@@ -112,6 +117,7 @@ export class IngestorModule {}
 ```
 
 **Diagnosis checklist:**
+
 ```bash
 # 1. Decode the token (jwt.io or cli)
 echo $TOKEN | cut -d. -f2 | base64 -d 2>/dev/null | jq .
@@ -126,6 +132,7 @@ date +%s  # Current Unix timestamp
 ```
 
 **Common fixes:**
+
 - Token expired → Use refresh flow
 - Secret mismatch between API instances → Ensure same `.env` on all instances
 - Missing `Bearer` prefix → Header must be `Authorization: Bearer <token>`
@@ -139,6 +146,7 @@ Access-Control-Allow-Origin header missing
 ```
 
 **Fix:** Check `CORS_ORIGIN` in API `.env`:
+
 ```bash
 # Development
 CORS_ORIGIN=http://localhost:3000
@@ -156,15 +164,17 @@ CORS_ORIGIN=https://cipta.app,https://www.cipta.app
 ```
 
 **Client-side:** Implement retry with exponential backoff.
+
 ```typescript
 const retryAfter = parseInt(response.headers['retry-after'] || '60');
 await sleep(retryAfter * 1000);
 ```
 
 **Server-side (adjust limits):**
+
 ```typescript
 // In ThrottlerModule config
-ThrottlerModule.forRoot([{ ttl: 60000, limit: 200 }])  // Increase limit
+ThrottlerModule.forRoot([{ ttl: 60000, limit: 200 }]); // Increase limit
 ```
 
 ---
@@ -177,13 +187,13 @@ ThrottlerModule.forRoot([{ ttl: 60000, limit: 200 }])  // Increase limit
 ERROR: [youtube] xxx: Video unavailable
 ```
 
-| Error Message | Cause | Fix |
-|--------------|-------|-----|
-| `Video unavailable` | Video is private/deleted/geo-blocked | Skip, mark source FAILED |
-| `HTTP Error 429` | YouTube rate limiting | Rotate IP / use proxy / wait |
-| `Unable to extract` | yt-dlp version outdated | `pip install -U yt-dlp` |
-| `Sign in to confirm your age` | Age-restricted content | Provide cookies file |
-| `Premieres in X hours` | Video not yet live | Schedule retry |
+| Error Message                 | Cause                                | Fix                          |
+| ----------------------------- | ------------------------------------ | ---------------------------- |
+| `Video unavailable`           | Video is private/deleted/geo-blocked | Skip, mark source FAILED     |
+| `HTTP Error 429`              | YouTube rate limiting                | Rotate IP / use proxy / wait |
+| `Unable to extract`           | yt-dlp version outdated              | `pip install -U yt-dlp`      |
+| `Sign in to confirm your age` | Age-restricted content               | Provide cookies file         |
+| `Premieres in X hours`        | Video not yet live                   | Schedule retry               |
 
 ```bash
 # Update yt-dlp
@@ -207,6 +217,7 @@ Error: Request timeout after 120000ms
 **Likely cause:** Audio file is too large (> 25MB Whisper limit).
 
 **Fix:**
+
 ```bash
 # 1. Check file size
 ls -lh audio.mp3
@@ -227,6 +238,7 @@ Process exited with code 137
 ```
 
 **Diagnosis:**
+
 ```bash
 # Check dmesg for OOM kills
 dmesg | grep -i "oom\|killed" | tail -10
@@ -236,6 +248,7 @@ docker stats --no-stream | grep worker
 ```
 
 **Fixes:**
+
 1. Reduce `WORKER_CONCURRENCY_FACTORY` (fewer concurrent FFmpeg processes)
 2. Increase container memory limit
 3. Use more aggressive FFmpeg preset (`-preset fast` instead of `medium`)
@@ -250,6 +263,7 @@ Error: Failed to generate unique hash after max attempts
 ```
 
 **Extremely rare.** If it happens:
+
 1. Verify the random seed is actually changing between attempts
 2. Check that FFmpeg filters are actually being applied (log the command)
 3. Increase the variation range in `GuardianParams` (use `aggressive` preset)
@@ -266,6 +280,7 @@ Type error: Property 'xxx' does not exist on type 'yyy'
 ```
 
 **Fix:**
+
 ```bash
 # Regenerate types
 pnpm --filter web check-types
@@ -283,6 +298,7 @@ WebSocket connection to 'wss://api.cipta.app/ws' failed
 ```
 
 **Diagnosis:**
+
 ```bash
 # 1. Check API WebSocket gateway is running
 curl -i -N \
@@ -306,6 +322,7 @@ curl -i -N \
 **Likely cause:** React Query cache not invalidated after mutation.
 
 **Fix:**
+
 ```typescript
 // After a mutation, invalidate related queries
 const mutation = useMutation({
@@ -322,30 +339,30 @@ const mutation = useMutation({
 
 ### 5.1 TikTok
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `access_token_expired` | OAuth token expired | Refresh token via TikTok API |
-| `spam_risk_detected` | Flagged as automated | Increase cooldown, reduce volume |
-| `video_format_not_supported` | Wrong codec/container | Ensure H.264 MP4, AAC audio |
-| `file_too_large` | > 287MB for direct upload | Compress video |
+| Error                        | Cause                     | Fix                              |
+| ---------------------------- | ------------------------- | -------------------------------- |
+| `access_token_expired`       | OAuth token expired       | Refresh token via TikTok API     |
+| `spam_risk_detected`         | Flagged as automated      | Increase cooldown, reduce volume |
+| `video_format_not_supported` | Wrong codec/container     | Ensure H.264 MP4, AAC audio      |
+| `file_too_large`             | > 287MB for direct upload | Compress video                   |
 
 ### 5.2 Instagram
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `OAuthException` | Token expired or invalidated | Re-authenticate via Meta Graph |
-| `RATE_LIMIT_REACHED` | Too many API calls | Wait for rate limit reset |
-| `VIDEO_TOO_SHORT` | < 3 seconds | Ensure chunk min duration |
-| `ASPECT_RATIO_NOT_SUPPORTED` | Not 9:16 for Reels | Check frameConfig |
+| Error                        | Cause                        | Fix                            |
+| ---------------------------- | ---------------------------- | ------------------------------ |
+| `OAuthException`             | Token expired or invalidated | Re-authenticate via Meta Graph |
+| `RATE_LIMIT_REACHED`         | Too many API calls           | Wait for rate limit reset      |
+| `VIDEO_TOO_SHORT`            | < 3 seconds                  | Ensure chunk min duration      |
+| `ASPECT_RATIO_NOT_SUPPORTED` | Not 9:16 for Reels           | Check frameConfig              |
 
 ### 5.3 YouTube
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `quotaExceeded` | Daily API quota hit (10,000 units) | Wait 24h or request quota increase |
-| `notFound` | Channel not found | Verify OAuth scope includes upload |
-| `forbidden` | Missing upload permissions | Re-authenticate with correct scopes |
-| `videoTooLong` for Shorts | > 60 seconds | Trim to under 60s |
+| Error                     | Cause                              | Fix                                 |
+| ------------------------- | ---------------------------------- | ----------------------------------- |
+| `quotaExceeded`           | Daily API quota hit (10,000 units) | Wait 24h or request quota increase  |
+| `notFound`                | Channel not found                  | Verify OAuth scope includes upload  |
+| `forbidden`               | Missing upload permissions         | Re-authenticate with correct scopes |
+| `videoTooLong` for Shorts | > 60 seconds                       | Trim to under 60s                   |
 
 ---
 

@@ -63,6 +63,7 @@ pnpm --filter web build
 ```
 
 **Environment Variables (Vercel):**
+
 ```
 NEXT_PUBLIC_API_URL=https://api.cipta.app
 NEXT_PUBLIC_WS_URL=wss://api.cipta.app
@@ -75,12 +76,14 @@ NEXT_PUBLIC_WS_URL=wss://api.cipta.app
 ### 3.2 API Server (`apps/api`) — Container Deploy
 
 **Build:**
+
 ```bash
 # From repo root
 docker build -f apps/api/Dockerfile -t cipta-api:latest .
 ```
 
 **Dockerfile (apps/api/Dockerfile):**
+
 ```dockerfile
 # Stage 1: Build
 FROM node:22-alpine AS builder
@@ -110,6 +113,7 @@ CMD ["node", "dist/main.js"]
 ```
 
 **Deploy:**
+
 ```bash
 # Push to container registry
 docker tag cipta-api:latest ghcr.io/your-org/cipta-api:latest
@@ -124,11 +128,13 @@ docker compose -f docker-compose.prod.yml up -d api
 ### 3.3 Worker (`apps/worker`) — Container Deploy
 
 **Build:**
+
 ```bash
 docker build -f apps/worker/Dockerfile -t cipta-worker:latest .
 ```
 
 **Dockerfile (apps/worker/Dockerfile):**
+
 ```dockerfile
 # Stage 1: Build
 FROM node:22-alpine AS builder
@@ -188,6 +194,7 @@ DATABASE_URL=$PRODUCTION_DB_URL pnpm --filter @cipta/database exec prisma migrat
 ```
 
 **Migration Order:**
+
 ```
 1. Run migration on production DB        ← First
 2. Deploy API server (new code)           ← Second
@@ -301,14 +308,14 @@ jobs:
 
 ## 6. Environment Matrix
 
-| Variable | Dev | Staging | Production |
-|----------|-----|---------|------------|
-| `NODE_ENV` | development | staging | production |
-| `API_PORT` | 3001 | 3001 | 3001 |
-| `DATABASE_URL` | localhost | staging-db.host | prod-db.host |
-| `REDIS_HOST` | localhost | staging-redis | prod-redis |
-| `STORAGE_PROVIDER` | local | s3 | s3 |
-| `STORAGE_BUCKET` | — | cipta-staging | cipta-prod |
-| `JWT_ACCESS_EXPIRY` | 1h | 15m | 15m |
-| `LOG_LEVEL` | debug | info | info |
-| `CORS_ORIGIN` | * | staging.cipta.app | cipta.app |
+| Variable            | Dev         | Staging           | Production   |
+| ------------------- | ----------- | ----------------- | ------------ |
+| `NODE_ENV`          | development | staging           | production   |
+| `API_PORT`          | 3001        | 3001              | 3001         |
+| `DATABASE_URL`      | localhost   | staging-db.host   | prod-db.host |
+| `REDIS_HOST`        | localhost   | staging-redis     | prod-redis   |
+| `STORAGE_PROVIDER`  | local       | s3                | s3           |
+| `STORAGE_BUCKET`    | —           | cipta-staging     | cipta-prod   |
+| `JWT_ACCESS_EXPIRY` | 1h          | 15m               | 15m          |
+| `LOG_LEVEL`         | debug       | info              | info         |
+| `CORS_ORIGIN`       | \*          | staging.cipta.app | cipta.app    |

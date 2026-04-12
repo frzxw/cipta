@@ -202,9 +202,11 @@ After every SEV-1 or SEV-2 incident, write a postmortem within 48 hours:
 **Author:** @person
 
 ## Summary
+
 One-paragraph description of what happened and the user impact.
 
 ## Timeline (UTC)
+
 - HH:MM — First alert triggered / user report received
 - HH:MM — IC assigned, investigation started
 - HH:MM — Root cause identified
@@ -212,26 +214,32 @@ One-paragraph description of what happened and the user impact.
 - HH:MM — Full resolution confirmed
 
 ## Root Cause
+
 Technical explanation of what failed and why.
 
 ## Impact
+
 - Users affected: N
 - Jobs delayed/failed: N
 - Revenue impact: $X (if applicable)
 
 ## What Went Well
+
 - [Things that helped detect or resolve the incident faster]
 
 ## What Went Poorly
+
 - [Things that slowed us down or made the issue worse]
 
 ## Action Items
-| Action | Owner | Priority | Due Date |
-|--------|-------|----------|----------|
-| [Fix] | @person | P0 | YYYY-MM-DD |
-| [Prevention] | @person | P1 | YYYY-MM-DD |
-| [Monitoring] | @person | P2 | YYYY-MM-DD |
+
+| Action       | Owner   | Priority | Due Date   |
+| ------------ | ------- | -------- | ---------- |
+| [Fix]        | @person | P0       | YYYY-MM-DD |
+| [Prevention] | @person | P1       | YYYY-MM-DD |
+| [Monitoring] | @person | P2       | YYYY-MM-DD |
 
 ## Lessons Learned
+
 Key takeaways for the team.
 ```

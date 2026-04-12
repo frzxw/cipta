@@ -1,6 +1,7 @@
 # Project Guidelines
 
 ## Workspace Overview
+
 - This repository is a pnpm + Turborepo monorepo.
 - Active apps in this workspace:
   - `apps/api` (NestJS backend)
@@ -12,6 +13,7 @@
   - `packages/typescript-config`
 
 ## Build and Test
+
 - Use pnpm only (`pnpm@9`, workspaces enabled).
 - Root commands:
   - `pnpm dev`
@@ -26,6 +28,7 @@
   - `pnpm --filter api test:e2e`
 
 ## Architecture and Boundaries
+
 - Keep changes scoped to the affected app/package; avoid cross-package refactors unless requested.
 - Respect shared configuration packages before adding local overrides:
   - `packages/eslint-config`
@@ -34,6 +37,7 @@
 - Treat `docs/ARCHITECTURE.md` as the intended target architecture. Some documented modules/packages (for example worker/database modules) may be planned and not fully scaffolded yet.
 
 ## Conventions and Pitfalls
+
 - Node engine is `>=18` (docs currently recommend Node 22 LTS for local setup).
 - Lint is strict for web/docs/ui (`--max-warnings 0`), so warnings should be treated as failures.
 - Do not use npm/yarn commands for install or scripts in this repo.
@@ -41,6 +45,7 @@
 - Turborepo task dependencies (`^build`, `^lint`, `^check-types`) can fail downstream tasks when an upstream package is broken.
 
 ## Link to Existing Docs
+
 - Primary docs index: `docs/README.md`
 - Architecture: `docs/ARCHITECTURE.md`
 - Contributing and local setup: `docs/CONTRIBUTING.md`

@@ -10,14 +10,14 @@
 
 ### 1.1 Health Indicators
 
-| Indicator | Healthy | Degraded | Critical |
-|-----------|---------|----------|----------|
-| Queue depth | < 50 pending | 50-200 pending | > 200 pending |
-| Job processing time | Within expected range | 2× expected | 5× expected or stalled |
-| Failed job rate | < 2% | 2-10% | > 10% |
-| Worker memory | < 2GB RSS | 2-4GB | > 4GB (memory leak) |
-| Disk space (temp) | > 20GB free | 5-20GB | < 5GB |
-| Redis memory | < 50% of max | 50-80% | > 80% |
+| Indicator           | Healthy               | Degraded       | Critical               |
+| ------------------- | --------------------- | -------------- | ---------------------- |
+| Queue depth         | < 50 pending          | 50-200 pending | > 200 pending          |
+| Job processing time | Within expected range | 2× expected    | 5× expected or stalled |
+| Failed job rate     | < 2%                  | 2-10%          | > 10%                  |
+| Worker memory       | < 2GB RSS             | 2-4GB          | > 4GB (memory leak)    |
+| Disk space (temp)   | > 20GB free           | 5-20GB         | < 5GB                  |
+| Redis memory        | < 50% of max          | 50-80%         | > 80%                  |
 
 ### 1.2 Monitoring Dashboard (Bull Board)
 
@@ -72,7 +72,7 @@ console.log(counts);
 
 // Get failed jobs with error details
 const failedJobs = await queue.getFailed(0, 10);
-failedJobs.forEach(job => {
+failedJobs.forEach((job) => {
   console.log(job.id, job.failedReason, job.data);
 });
 ```
@@ -89,14 +89,14 @@ failedJobs.forEach(job => {
 
 ### 3.2 Root Causes
 
-| Cause | Diagnosis | Fix |
-|-------|-----------|-----|
-| FFmpeg hanging | Worker process at high CPU, no stderr output | Kill + retry |
-| yt-dlp hanging | Worker process idle, connection timeout | Kill + retry |
-| External API timeout | Worker waiting on Whisper/LLM | Set request timeout |
-| Memory exhaustion | OOM killer terminates worker | Increase memory limit |
-| Redis disconnect | Worker lost connection mid-job | BullMQ auto-stall recovery |
-| Deadlock in DB | Worker blocked on Prisma query | Check `pg_stat_activity` |
+| Cause                | Diagnosis                                    | Fix                        |
+| -------------------- | -------------------------------------------- | -------------------------- |
+| FFmpeg hanging       | Worker process at high CPU, no stderr output | Kill + retry               |
+| yt-dlp hanging       | Worker process idle, connection timeout      | Kill + retry               |
+| External API timeout | Worker waiting on Whisper/LLM                | Set request timeout        |
+| Memory exhaustion    | OOM killer terminates worker                 | Increase memory limit      |
+| Redis disconnect     | Worker lost connection mid-job               | BullMQ auto-stall recovery |
+| Deadlock in DB       | Worker blocked on Prisma query               | Check `pg_stat_activity`   |
 
 ### 3.3 Recovery
 
@@ -134,13 +134,13 @@ console.log(`Retried ${failedJobs.length} failed jobs`);
 
 ### 4.1 When to Scale
 
-| Signal | Action |
-|--------|--------|
-| Queue depth > 50 for > 5 minutes | Add 1 worker instance |
-| Queue depth > 200 | Add 2-3 worker instances |
-| Average processing time increasing | Check for resource bottleneck |
-| CPU usage > 80% sustained | Add worker on new node |
-| GPU utilization < 30% | Increase `WORKER_CONCURRENCY_FACTORY` |
+| Signal                             | Action                                |
+| ---------------------------------- | ------------------------------------- |
+| Queue depth > 50 for > 5 minutes   | Add 1 worker instance                 |
+| Queue depth > 200                  | Add 2-3 worker instances              |
+| Average processing time increasing | Check for resource bottleneck         |
+| CPU usage > 80% sustained          | Add worker on new node                |
+| GPU utilization < 30%              | Increase `WORKER_CONCURRENCY_FACTORY` |
 
 ### 4.2 How to Scale
 
@@ -158,12 +158,12 @@ PUBSUB NUMSUB bull:cipta:ingestor bull:cipta:factory bull:cipta:guardian bull:ci
 
 ### 4.3 Concurrency Tuning
 
-| Queue | Default Concurrency | CPU Bound? | Guidance |
-|-------|---------------------|-----------|----------|
-| `ingestor` | 3 | I/O bound (download) | ↑ to 5-10 if bandwidth allows |
-| `factory` | 2 | CPU/GPU heavy (FFmpeg) | ↑ only if GPU is available |
-| `guardian` | 5 | CPU heavy (FFmpeg × N) | ↓ if memory constrained |
-| `fleet` | 3 | I/O bound (API calls) | ↑ to 5-10 if platform rate limits allow |
+| Queue      | Default Concurrency | CPU Bound?             | Guidance                                |
+| ---------- | ------------------- | ---------------------- | --------------------------------------- |
+| `ingestor` | 3                   | I/O bound (download)   | ↑ to 5-10 if bandwidth allows           |
+| `factory`  | 2                   | CPU/GPU heavy (FFmpeg) | ↑ only if GPU is available              |
+| `guardian` | 5                   | CPU heavy (FFmpeg × N) | ↓ if memory constrained                 |
+| `fleet`    | 3                   | I/O bound (API calls)  | ↑ to 5-10 if platform rate limits allow |
 
 ```bash
 # Override per-instance via env vars
@@ -179,16 +179,16 @@ WORKER_CONCURRENCY_FLEET=5
 
 ### 5.1 Common FFmpeg Errors
 
-| Error | Cause | Fix |
-|-------|-------|-----|
-| `No such file or directory` | Input file not downloaded | Check storage download step |
-| `Invalid data found when processing input` | Corrupt download | Re-download source |
-| `Avi not finished (-1, 0)` | Interrupted write | Check disk space |
-| `Cannot find a matching stream` | Codec mismatch | Check input format |
-| `cuda: device not found` | No GPU / driver issue | Fall back to CPU encoder |
-| `Error initializing output device nvenc` | NVENC driver mismatch | Update NVIDIA driver |
-| `Output file is empty` | Filter graph error | Check FFmpeg filter syntax |
-| `Killed` (exit 137) | OOM killer | Reduce concurrency or add RAM |
+| Error                                      | Cause                     | Fix                           |
+| ------------------------------------------ | ------------------------- | ----------------------------- |
+| `No such file or directory`                | Input file not downloaded | Check storage download step   |
+| `Invalid data found when processing input` | Corrupt download          | Re-download source            |
+| `Avi not finished (-1, 0)`                 | Interrupted write         | Check disk space              |
+| `Cannot find a matching stream`            | Codec mismatch            | Check input format            |
+| `cuda: device not found`                   | No GPU / driver issue     | Fall back to CPU encoder      |
+| `Error initializing output device nvenc`   | NVENC driver mismatch     | Update NVIDIA driver          |
+| `Output file is empty`                     | Filter graph error        | Check FFmpeg filter syntax    |
+| `Killed` (exit 137)                        | OOM killer                | Reduce concurrency or add RAM |
 
 ### 5.2 Debug an FFmpeg Command
 
@@ -262,7 +262,7 @@ import { statfs } from 'fs/promises';
 
 async function checkDiskSpace(minFreeGB: number = 5): Promise<boolean> {
   const stats = await statfs('/tmp/cipta');
-  const freeGB = (stats.bfree * stats.bsize) / (1024 ** 3);
+  const freeGB = (stats.bfree * stats.bsize) / 1024 ** 3;
   return freeGB >= minFreeGB;
 }
 

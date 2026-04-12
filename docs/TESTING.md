@@ -32,14 +32,14 @@
 
 ## 2. Test Infrastructure by Package
 
-| Package | Framework | Runner | Config File |
-|---------|-----------|--------|-------------|
-| `apps/api` | Jest + Supertest | `jest` | `jest` config in `package.json` |
-| `apps/worker` | Vitest | `vitest` | `vitest.config.ts` |
-| `apps/web` | Vitest + React Testing Library | `vitest` | `vitest.config.ts` |
-| `packages/database` | Vitest | `vitest` | `vitest.config.ts` |
-| `packages/shared` | Vitest | `vitest` | `vitest.config.ts` |
-| E2E (cross-cutting) | Playwright | `playwright` | `playwright.config.ts` |
+| Package             | Framework                      | Runner       | Config File                     |
+| ------------------- | ------------------------------ | ------------ | ------------------------------- |
+| `apps/api`          | Jest + Supertest               | `jest`       | `jest` config in `package.json` |
+| `apps/worker`       | Vitest                         | `vitest`     | `vitest.config.ts`              |
+| `apps/web`          | Vitest + React Testing Library | `vitest`     | `vitest.config.ts`              |
+| `packages/database` | Vitest                         | `vitest`     | `vitest.config.ts`              |
+| `packages/shared`   | Vitest                         | `vitest`     | `vitest.config.ts`              |
+| E2E (cross-cutting) | Playwright                     | `playwright` | `playwright.config.ts`          |
 
 ### Turborepo Task Configuration
 
@@ -50,14 +50,14 @@
     "test": {
       "dependsOn": ["^build"],
       "inputs": ["src/**", "test/**", "vitest.config.*", "jest.config.*"],
-      "outputs": ["coverage/**"]
+      "outputs": ["coverage/**"],
     },
     "test:e2e": {
       "dependsOn": ["build"],
       "inputs": ["e2e/**", "playwright.config.*"],
-      "cache": false
-    }
-  }
+      "cache": false,
+    },
+  },
 }
 ```
 
@@ -65,17 +65,18 @@
 
 ## 3. Coverage Targets
 
-| Package | Statement | Branch | Function | Line |
-|---------|-----------|--------|----------|------|
-| `apps/api` services | 80% | 75% | 80% | 80% |
-| `apps/api` controllers | 70% | 60% | 70% | 70% |
-| `apps/worker` processors | 80% | 75% | 80% | 80% |
-| `apps/worker` services | 85% | 80% | 85% | 85% |
-| `packages/shared` | 90% | 85% | 90% | 90% |
-| `packages/database` | 60% | 50% | 60% | 60% |
-| `apps/web` components | 70% | 60% | 70% | 70% |
+| Package                  | Statement | Branch | Function | Line |
+| ------------------------ | --------- | ------ | -------- | ---- |
+| `apps/api` services      | 80%       | 75%    | 80%      | 80%  |
+| `apps/api` controllers   | 70%       | 60%    | 70%      | 70%  |
+| `apps/worker` processors | 80%       | 75%    | 80%      | 80%  |
+| `apps/worker` services   | 85%       | 80%    | 85%      | 85%  |
+| `packages/shared`        | 90%       | 85%    | 90%      | 90%  |
+| `packages/database`      | 60%       | 50%    | 60%      | 60%  |
+| `apps/web` components    | 70%       | 60%    | 70%      | 70%  |
 
 **Enforcement:**
+
 ```jsonc
 // Jest (apps/api)
 {
@@ -84,9 +85,9 @@
       "statements": 75,
       "branches": 65,
       "functions": 75,
-      "lines": 75
-    }
-  }
+      "lines": 75,
+    },
+  },
 }
 ```
 
@@ -159,10 +160,14 @@ describe('IngestorService', () => {
           data: expect.objectContaining({ url: dto.url, workspaceId: 'ws_1' }),
         }),
       );
-      expect(queue.add).toHaveBeenCalledWith('download', expect.objectContaining({
-        sourceId: 'src_1',
-        url: dto.url,
-      }), expect.any(Object));
+      expect(queue.add).toHaveBeenCalledWith(
+        'download',
+        expect.objectContaining({
+          sourceId: 'src_1',
+          url: dto.url,
+        }),
+        expect.any(Object),
+      );
       expect(result.status).toBe('PENDING');
     });
 
@@ -170,8 +175,7 @@ describe('IngestorService', () => {
       const dto = { url: 'not-a-valid-url' };
       const mockUser = { id: 'usr_1', workspaceId: 'ws_1' };
 
-      await expect(service.createSource(dto as any, mockUser as any))
-        .rejects.toThrow();
+      await expect(service.createSource(dto as any, mockUser as any)).rejects.toThrow();
     });
   });
 });
@@ -439,13 +443,15 @@ describe('Job Chaining', () => {
     // Spy on the queue to detect new jobs
     const transcribeJobs: Job[] = [];
     const listener = queue.on('waiting', (jobId) => {
-      queue.getJob(jobId).then(job => {
+      queue.getJob(jobId).then((job) => {
         if (job?.name === 'transcribe') transcribeJobs.push(job);
       });
     });
 
     // Trigger download
-    await queue.add('download', { /* ... */ });
+    await queue.add('download', {
+      /* ... */
+    });
 
     // Wait for chaining
     await sleep(5000);
@@ -473,10 +479,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 1 : undefined,
-  reporter: [
-    ['html', { open: 'never' }],
-    ['list'],
-  ],
+  reporter: [['html', { open: 'never' }], ['list']],
   use: {
     baseURL: 'http://localhost:3000',
     trace: 'on-first-retry',
@@ -503,14 +506,14 @@ export default defineConfig({
 
 ### 6.2 Critical E2E Flows
 
-| Test ID | Flow | Priority |
-|---------|------|----------|
-| E2E-001 | Register → Login → See Dashboard | P0 |
-| E2E-002 | Paste URL → See Source in list → Status updates | P0 |
-| E2E-003 | Approve Viral Spikes → Trigger Render → See Asset | P0 |
-| E2E-004 | Create Cluster → Add Accounts → Schedule Distribution | P1 |
-| E2E-005 | Change Render Profile → Re-render → Compare output | P1 |
-| E2E-006 | Workspace settings → Invite member → Role check | P2 |
+| Test ID | Flow                                                  | Priority |
+| ------- | ----------------------------------------------------- | -------- |
+| E2E-001 | Register → Login → See Dashboard                      | P0       |
+| E2E-002 | Paste URL → See Source in list → Status updates       | P0       |
+| E2E-003 | Approve Viral Spikes → Trigger Render → See Asset     | P0       |
+| E2E-004 | Create Cluster → Add Accounts → Schedule Distribution | P1       |
+| E2E-005 | Change Render Profile → Re-render → Compare output    | P1       |
+| E2E-006 | Workspace settings → Invite member → Role check       | P2       |
 
 ### 6.3 E2E Test Example
 
@@ -657,8 +660,12 @@ async function main() {
       workspaceId: workspace.id,
       name: 'Default Style',
       isDefault: true,
-      captionStyle: { /* ... */ },
-      frameConfig: { /* ... */ },
+      captionStyle: {
+        /* ... */
+      },
+      frameConfig: {
+        /* ... */
+      },
       brollConfig: { enabled: false },
     },
   });
@@ -673,13 +680,13 @@ main()
 
 ### 7.3 Test Isolation Rules
 
-| Rule | Implementation |
-|------|---------------|
-| Tests create their own data | No dependency on seed data |
-| Tests clean up after themselves | `afterAll` / `afterEach` hooks |
-| No shared mutable state | Fresh instances per `describe` block |
-| Unique emails/slugs per test | Use `uuid()` in factory functions |
-| Parallel-safe | No hardcoded IDs or ports |
+| Rule                            | Implementation                       |
+| ------------------------------- | ------------------------------------ |
+| Tests create their own data     | No dependency on seed data           |
+| Tests clean up after themselves | `afterAll` / `afterEach` hooks       |
+| No shared mutable state         | Fresh instances per `describe` block |
+| Unique emails/slugs per test    | Use `uuid()` in factory functions    |
+| Parallel-safe                   | No hardcoded IDs or ports            |
 
 ---
 
@@ -687,15 +694,15 @@ main()
 
 ### 8.1 What to Mock
 
-| Layer | Mock In Unit Tests? | Mock In Integration Tests? |
-|-------|---------------------|---------------------------|
-| Database (Prisma) | ✅ Always | ❌ Use test DB |
-| Redis / BullMQ | ✅ Always | ⚠️ Use test Redis or mock |
-| External APIs (Whisper, LLM) | ✅ Always | ✅ Always |
-| Cloud Storage (S3/GCS) | ✅ Always | ✅ Use local storage |
-| FFmpeg | ✅ Mock outputs | ⚠️ Use real FFmpeg with test video |
-| yt-dlp | ✅ Mock outputs | ✅ Always (never hit real URLs) |
-| Platform APIs (TikTok, etc.) | ✅ Always | ✅ Always |
+| Layer                        | Mock In Unit Tests? | Mock In Integration Tests?         |
+| ---------------------------- | ------------------- | ---------------------------------- |
+| Database (Prisma)            | ✅ Always           | ❌ Use test DB                     |
+| Redis / BullMQ               | ✅ Always           | ⚠️ Use test Redis or mock          |
+| External APIs (Whisper, LLM) | ✅ Always           | ✅ Always                          |
+| Cloud Storage (S3/GCS)       | ✅ Always           | ✅ Use local storage               |
+| FFmpeg                       | ✅ Mock outputs     | ⚠️ Use real FFmpeg with test video |
+| yt-dlp                       | ✅ Mock outputs     | ✅ Always (never hit real URLs)    |
+| Platform APIs (TikTok, etc.) | ✅ Always           | ✅ Always                          |
 
 ### 8.2 External API Mocking
 
@@ -721,17 +728,21 @@ const handlers = [
   // Mock LLM API
   http.post('https://api.openai.com/v1/chat/completions', () => {
     return HttpResponse.json({
-      choices: [{
-        message: {
-          content: JSON.stringify([
-            {
-              startTime: 10.0, endTime: 45.0,
-              confidenceScore: 85, category: 'HUMOR',
-              suggestedTitle: 'Test viral spike',
-            },
-          ]),
+      choices: [
+        {
+          message: {
+            content: JSON.stringify([
+              {
+                startTime: 10.0,
+                endTime: 45.0,
+                confidenceScore: 85,
+                category: 'HUMOR',
+                suggestedTitle: 'Test viral spike',
+              },
+            ]),
+          },
         },
-      }],
+      ],
     });
   }),
 ];
@@ -826,15 +837,15 @@ describe('IngestorService', () => {
 
 ### Test ID Matrix
 
-| ID | Acceptance Criteria | Test Type | File |
-|----|---------------------|-----------|------|
-| AC-001.1 | Accept YouTube/TikTok/Twitch URLs | Unit | `ingestor.service.spec.ts` |
-| AC-001.3 | Real-time download progress | Integration | `ingestor.integration-spec.ts` |
-| AC-001.6 | Retry 3× with exponential backoff | Unit | `downloader.service.spec.ts` |
-| AC-002.2 | Word-level timestamps | Unit | `transcriber.service.spec.ts` |
-| AC-003.2 | Spike includes timestamps/confidence/category | Unit | `analyzer.service.spec.ts` |
-| AC-004.1 | 16:9 → 9:16 crop with face tracking | Integration | `factory.integration-spec.ts` |
-| AC-005.2 | Each variation has unique MD5 | Integration | `guardian.integration-spec.ts` |
-| AC-005.5 | SSIM ≥ 0.98 | Integration | `guardian.integration-spec.ts` |
-| AC-009.1 | Register with email/password | E2E | `auth.spec.ts` |
-| AC-009.2 | JWT access + refresh tokens | Integration | `auth.e2e-spec.ts` |
+| ID       | Acceptance Criteria                           | Test Type   | File                           |
+| -------- | --------------------------------------------- | ----------- | ------------------------------ |
+| AC-001.1 | Accept YouTube/TikTok/Twitch URLs             | Unit        | `ingestor.service.spec.ts`     |
+| AC-001.3 | Real-time download progress                   | Integration | `ingestor.integration-spec.ts` |
+| AC-001.6 | Retry 3× with exponential backoff             | Unit        | `downloader.service.spec.ts`   |
+| AC-002.2 | Word-level timestamps                         | Unit        | `transcriber.service.spec.ts`  |
+| AC-003.2 | Spike includes timestamps/confidence/category | Unit        | `analyzer.service.spec.ts`     |
+| AC-004.1 | 16:9 → 9:16 crop with face tracking           | Integration | `factory.integration-spec.ts`  |
+| AC-005.2 | Each variation has unique MD5                 | Integration | `guardian.integration-spec.ts` |
+| AC-005.5 | SSIM ≥ 0.98                                   | Integration | `guardian.integration-spec.ts` |
+| AC-009.1 | Register with email/password                  | E2E         | `auth.spec.ts`                 |
+| AC-009.2 | JWT access + refresh tokens                   | Integration | `auth.e2e-spec.ts`             |

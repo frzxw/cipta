@@ -9,14 +9,14 @@
 
 ### 1.1 Prerequisites
 
-| Tool | Version | Purpose |
-|------|---------|---------|
-| Node.js | 22 LTS | Runtime |
-| pnpm | 9.x | Package manager |
-| Docker Desktop | Latest | PostgreSQL + Redis |
-| FFmpeg | 7+ | Video processing (Worker) |
-| yt-dlp | Latest | Media downloading (Worker) |
-| Git | 2.40+ | Version control |
+| Tool           | Version | Purpose                    |
+| -------------- | ------- | -------------------------- |
+| Node.js        | 22 LTS  | Runtime                    |
+| pnpm           | 9.x     | Package manager            |
+| Docker Desktop | Latest  | PostgreSQL + Redis         |
+| FFmpeg         | 7+      | Video processing (Worker)  |
+| yt-dlp         | Latest  | Media downloading (Worker) |
+| Git            | 2.40+   | Version control            |
 
 ### 1.2 Initial Setup
 
@@ -47,13 +47,13 @@ pnpm dev
 
 ### 1.3 Development URLs
 
-| Service | URL |
-|---------|-----|
-| Web Dashboard | `http://localhost:3000` |
-| API Server | `http://localhost:3001` |
-| API Docs (Swagger) | `http://localhost:3001/docs` |
+| Service                  | URL                                  |
+| ------------------------ | ------------------------------------ |
+| Web Dashboard            | `http://localhost:3000`              |
+| API Server               | `http://localhost:3001`              |
+| API Docs (Swagger)       | `http://localhost:3001/docs`         |
 | Bull Board (Job Monitor) | `http://localhost:3001/admin/queues` |
-| Prisma Studio | `http://localhost:5555` |
+| Prisma Studio            | `http://localhost:5555`              |
 
 ---
 
@@ -92,14 +92,14 @@ pnpm --filter api test:e2e         # Run API E2E tests
 
 ### 3.1 Branching Strategy
 
-| Branch | Purpose | Merges Into |
-|--------|---------|-------------|
-| `main` | Production-ready code | — |
-| `develop` | Integration branch | `main` (via release PR) |
-| `feat/<ticket>-<description>` | New features | `develop` |
-| `fix/<ticket>-<description>` | Bug fixes | `develop` |
-| `docs/<description>` | Documentation changes | `develop` |
-| `refactor/<description>` | Code refactoring | `develop` |
+| Branch                        | Purpose               | Merges Into             |
+| ----------------------------- | --------------------- | ----------------------- |
+| `main`                        | Production-ready code | —                       |
+| `develop`                     | Integration branch    | `main` (via release PR) |
+| `feat/<ticket>-<description>` | New features          | `develop`               |
+| `fix/<ticket>-<description>`  | Bug fixes             | `develop`               |
+| `docs/<description>`          | Documentation changes | `develop`               |
+| `refactor/<description>`      | Code refactoring      | `develop`               |
 
 ### 3.2 Commit Convention
 
@@ -115,16 +115,16 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) strictly:
 
 **Types:**
 
-| Type | Usage |
-|------|-------|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `docs` | Documentation only |
+| Type       | Usage                                   |
+| ---------- | --------------------------------------- |
+| `feat`     | New feature                             |
+| `fix`      | Bug fix                                 |
+| `docs`     | Documentation only                      |
 | `refactor` | Code change that neither fixes nor adds |
-| `test` | Adding or correcting tests |
-| `chore` | Build process, CI, tooling changes |
-| `perf` | Performance improvement |
-| `style` | Formatting, missing semicolons, etc. |
+| `test`     | Adding or correcting tests              |
+| `chore`    | Build process, CI, tooling changes      |
+| `perf`     | Performance improvement                 |
+| `style`    | Formatting, missing semicolons, etc.    |
 
 **Scopes:** `api`, `web`, `worker`, `database`, `shared`, `ui`, `docs`, `infra`
 
@@ -188,11 +188,11 @@ refactor(worker): extract FFmpeg commands into service layer
 
 ### 5.1 Test Pyramid
 
-| Level | Tool | Location | Coverage Target |
-|-------|------|----------|-----------------|
-| Unit Tests | Jest / Vitest | `*.spec.ts` alongside source | 80% for services |
-| Integration Tests | Jest + Supertest | `test/` directory | All API endpoints |
-| E2E Tests | Playwright | `e2e/` directory | Critical user flows |
+| Level             | Tool             | Location                     | Coverage Target     |
+| ----------------- | ---------------- | ---------------------------- | ------------------- |
+| Unit Tests        | Jest / Vitest    | `*.spec.ts` alongside source | 80% for services    |
+| Integration Tests | Jest + Supertest | `test/` directory            | All API endpoints   |
+| E2E Tests         | Playwright       | `e2e/` directory             | Critical user flows |
 
 ### 5.2 Test Naming Convention
 
@@ -225,6 +225,7 @@ describe('IngestorService', () => {
 ### 6.2 Required Variables
 
 #### `apps/api/.env`
+
 ```bash
 # Server
 API_PORT=3001
@@ -252,6 +253,7 @@ AWS_REGION=us-east-1
 ```
 
 #### `apps/worker/.env`
+
 ```bash
 # Database (same as API)
 DATABASE_URL=postgresql://cipta:cipta_dev@localhost:5432/cipta
@@ -285,20 +287,20 @@ LLM_API_KEY=...
 
 ## 7. File Naming Conventions
 
-| Context | Convention | Example |
-|---------|-----------|---------|
-| NestJS Module | `<name>.module.ts` | `ingestor.module.ts` |
-| NestJS Controller | `<name>.controller.ts` | `ingestor.controller.ts` |
-| NestJS Service | `<name>.service.ts` | `ingestor.service.ts` |
-| NestJS DTO | `<action>-<name>.dto.ts` | `create-source.dto.ts` |
-| NestJS Guard | `<name>.guard.ts` | `jwt-auth.guard.ts` |
-| Worker Processor | `<name>.processor.ts` | `ingestor.processor.ts` |
-| Worker Service | `<name>.service.ts` | `downloader.service.ts` |
-| Test File | `<name>.spec.ts` | `ingestor.service.spec.ts` |
-| E2E Test | `<name>.e2e-spec.ts` | `auth.e2e-spec.ts` |
-| Next.js Page | `page.tsx` | `app/sources/page.tsx` |
-| Next.js Layout | `layout.tsx` | `app/(dashboard)/layout.tsx` |
-| React Component | `<Name>.tsx` (PascalCase) | `SourceTable.tsx` |
-| Utility | `<name>.util.ts` or `<name>.ts` | `hash.util.ts` |
-| Constant | `<name>.const.ts` | `queues.const.ts` |
-| Type Definition | `<name>.types.ts` | `jobs.types.ts` |
+| Context           | Convention                      | Example                      |
+| ----------------- | ------------------------------- | ---------------------------- |
+| NestJS Module     | `<name>.module.ts`              | `ingestor.module.ts`         |
+| NestJS Controller | `<name>.controller.ts`          | `ingestor.controller.ts`     |
+| NestJS Service    | `<name>.service.ts`             | `ingestor.service.ts`        |
+| NestJS DTO        | `<action>-<name>.dto.ts`        | `create-source.dto.ts`       |
+| NestJS Guard      | `<name>.guard.ts`               | `jwt-auth.guard.ts`          |
+| Worker Processor  | `<name>.processor.ts`           | `ingestor.processor.ts`      |
+| Worker Service    | `<name>.service.ts`             | `downloader.service.ts`      |
+| Test File         | `<name>.spec.ts`                | `ingestor.service.spec.ts`   |
+| E2E Test          | `<name>.e2e-spec.ts`            | `auth.e2e-spec.ts`           |
+| Next.js Page      | `page.tsx`                      | `app/sources/page.tsx`       |
+| Next.js Layout    | `layout.tsx`                    | `app/(dashboard)/layout.tsx` |
+| React Component   | `<Name>.tsx` (PascalCase)       | `SourceTable.tsx`            |
+| Utility           | `<name>.util.ts` or `<name>.ts` | `hash.util.ts`               |
+| Constant          | `<name>.const.ts`               | `queues.const.ts`            |
+| Type Definition   | `<name>.types.ts`               | `jobs.types.ts`              |

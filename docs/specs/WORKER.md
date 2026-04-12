@@ -14,20 +14,20 @@ The Worker is the **muscle** of the Cipta platform. It performs all CPU/GPU-inte
 
 ### Core Constraints
 
-| Constraint | Rationale |
-|-----------|-----------|
-| **No NestJS imports** | Worker must be replaceable with Rust/Go |
-| **BullMQ-only communication** | No HTTP calls to the API server |
-| **Direct DB access via Prisma** | Reads/writes status updates directly |
+| Constraint                           | Rationale                                       |
+| ------------------------------------ | ----------------------------------------------- |
+| **No NestJS imports**                | Worker must be replaceable with Rust/Go         |
+| **BullMQ-only communication**        | No HTTP calls to the API server                 |
+| **Direct DB access via Prisma**      | Reads/writes status updates directly            |
 | **Shared types via `@cipta/shared`** | Type-safe job payloads without runtime coupling |
-| **Stateless** | Any worker instance can process any job |
-| **Horizontal scaling** | Add more worker instances for more throughput |
+| **Stateless**                        | Any worker instance can process any job         |
+| **Horizontal scaling**               | Add more worker instances for more throughput   |
 
 ---
 
 ## 2. Architecture
 
-```
+```text
 ┌────────────────────────────────────────────────────────┐
 │                    apps/worker                          │
 │                                                        │
@@ -104,26 +104,22 @@ async function bootstrap() {
 
   // Start workers
   const workers = [
-    new Worker(
-      QUEUE_NAMES.INGESTOR,
-      createIngestorProcessor(context),
-      { connection: redisConnection, concurrency: config.concurrency.ingestor }
-    ),
-    new Worker(
-      QUEUE_NAMES.FACTORY,
-      createFactoryProcessor(context),
-      { connection: redisConnection, concurrency: config.concurrency.factory }
-    ),
-    new Worker(
-      QUEUE_NAMES.GUARDIAN,
-      createGuardianProcessor(context),
-      { connection: redisConnection, concurrency: config.concurrency.guardian }
-    ),
-    new Worker(
-      QUEUE_NAMES.FLEET,
-      createFleetProcessor(context),
-      { connection: redisConnection, concurrency: config.concurrency.fleet }
-    ),
+    new Worker(QUEUE_NAMES.INGESTOR, createIngestorProcessor(context), {
+      connection: redisConnection,
+      concurrency: config.concurrency.ingestor,
+    }),
+    new Worker(QUEUE_NAMES.FACTORY, createFactoryProcessor(context), {
+      connection: redisConnection,
+      concurrency: config.concurrency.factory,
+    }),
+    new Worker(QUEUE_NAMES.GUARDIAN, createGuardianProcessor(context), {
+      connection: redisConnection,
+      concurrency: config.concurrency.guardian,
+    }),
+    new Worker(QUEUE_NAMES.FLEET, createFleetProcessor(context), {
+      connection: redisConnection,
+      concurrency: config.concurrency.fleet,
+    }),
   ];
 
   // Event handlers
@@ -141,10 +137,13 @@ async function bootstrap() {
     });
   });
 
-  logger.info({
-    queues: Object.values(QUEUE_NAMES),
-    concurrency: config.concurrency,
-  }, '🏭 Cipta Worker started');
+  logger.info(
+    {
+      queues: Object.values(QUEUE_NAMES),
+      concurrency: config.concurrency,
+    },
+    '🏭 Cipta Worker started',
+  );
 
   // Graceful shutdown
   const shutdown = async (signal: string) => {
@@ -249,12 +248,12 @@ export interface WorkerContext {
 
 export const QUEUE_NAMES = {
   INGESTOR: 'cipta:ingestor',
-  FACTORY:  'cipta:factory',
+  FACTORY: 'cipta:factory',
   GUARDIAN: 'cipta:guardian',
-  FLEET:    'cipta:fleet',
+  FLEET: 'cipta:fleet',
 } as const;
 
-export type QueueName = typeof QUEUE_NAMES[keyof typeof QUEUE_NAMES];
+export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
 ```
 
 ### 6.2 Default Job Options
@@ -267,7 +266,7 @@ export const DEFAULT_JOB_OPTIONS = {
     attempts: 3,
     backoff: { type: 'exponential', delay: 1000 },
     removeOnComplete: { age: 86400, count: 1000 }, // 24 hours
-    removeOnFail: { age: 604800, count: 5000 },    // 7 days
+    removeOnFail: { age: 604800, count: 5000 }, // 7 days
   },
   [QUEUE_NAMES.FACTORY]: {
     attempts: 2,
@@ -300,21 +299,21 @@ Workers report progress back to BullMQ, which the API reads and forwards to the 
 async execute(job: Job<RenderJobPayload>) {
   // Report progress as percentage
   await job.updateProgress(10); // 10% - downloaded chunk
-  
+
   // ... processing ...
-  
+
   await job.updateProgress(50); // 50% - FFmpeg rendering
-  
+
   // ... more processing ...
-  
+
   await job.updateProgress(90); // 90% - uploading to storage
-  
+
   // Also update the Job record in DB for persistence
   await this.ctx.prisma.job.update({
     where: { bullJobId: job.id },
     data: { progress: 90, status: 'ACTIVE' },
   });
-  
+
   await job.updateProgress(100); // 100% - done
 }
 ```
@@ -340,13 +339,13 @@ await ingestorQueue.add(
     storagePath: uploadedPath,
     language: 'en',
   },
-  DEFAULT_JOB_OPTIONS[QUEUE_NAMES.INGESTOR]
+  DEFAULT_JOB_OPTIONS[QUEUE_NAMES.INGESTOR],
 );
 ```
 
 ### Chain Diagram
 
-```
+```text
 ingestor:download ──► ingestor:transcribe ──► ingestor:analyze
                                                      │
                                                      ▼ (user approval)
@@ -387,7 +386,7 @@ export function createStorageClient(config: StorageConfig): StorageClient {
 
 ### Storage Path Convention
 
-```
+```text
 {workspace_id}/
 ├── sources/
 │   ├── {source_id}/
@@ -423,6 +422,7 @@ export function createLogger(name: string) {
 ```
 
 **Log format:**
+
 ```json
 {
   "level": "info",
@@ -516,12 +516,12 @@ The worker must handle shutdown signals to avoid leaving jobs in a broken state:
 
 ## 13. Scaling Strategy
 
-| Scale Level | Configuration |
-|-------------|-------------|
-| **Single instance** | 1 worker process, all queues | Development |
-| **Per-queue workers** | 1 process per queue type | Small production |
-| **Horizontal** | N instances of same worker image | Medium production |
-| **GPU-specialized** | Factory/Guardian on GPU instances, others on CPU | Large production |
+| Scale Level           | Configuration                                    | Use Case          |
+| --------------------- | ------------------------------------------------ | ----------------- |
+| **Single instance**   | 1 worker process, all queues                     | Development       |
+| **Per-queue workers** | 1 process per queue type                         | Small production  |
+| **Horizontal**        | N instances of same worker image                 | Medium production |
+| **GPU-specialized**   | Factory/Guardian on GPU instances, others on CPU | Large production  |
 
 Workers are stateless — scale by simply running more instances. BullMQ handles job distribution automatically.
 
@@ -531,18 +531,18 @@ Workers are stateless — scale by simply running more instances. BullMQ handles
 
 ### 14.1 Unit Tests
 
-| Test | File |
-|------|------|
-| Config loading and validation | `config.spec.ts` |
-| Storage path construction | `storage.service.spec.ts` |
-| Job chaining logic | `ingestor.processor.spec.ts` |
-| Progress calculation | `renderer.service.spec.ts` |
+| Test                          | File                         |
+| ----------------------------- | ---------------------------- |
+| Config loading and validation | `config.spec.ts`             |
+| Storage path construction     | `storage.service.spec.ts`    |
+| Job chaining logic            | `ingestor.processor.spec.ts` |
+| Progress calculation          | `renderer.service.spec.ts`   |
 
 ### 14.2 Integration Tests
 
-| Test | File |
-|------|------|
+| Test                                          | File                           |
+| --------------------------------------------- | ------------------------------ |
 | Worker processes a mock ingest job end-to-end | `ingestor.integration-spec.ts` |
-| Factory processor renders a test video | `factory.integration-spec.ts` |
-| Guardian generates unique hashes | `guardian.integration-spec.ts` |
-| Graceful shutdown during active job | `worker.integration-spec.ts` |
+| Factory processor renders a test video        | `factory.integration-spec.ts`  |
+| Guardian generates unique hashes              | `guardian.integration-spec.ts` |
+| Graceful shutdown during active job           | `worker.integration-spec.ts`   |

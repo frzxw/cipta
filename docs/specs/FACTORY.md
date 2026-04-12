@@ -18,14 +18,14 @@ Chunk (raw segment) → Auto-Frame → Kinetic Captions → [B-Roll] → Rendere
 
 ### Responsibilities
 
-| Component | Responsibility | Runs In |
-|-----------|---------------|---------|
-| `FactoryController` | Trigger renders, list assets | `apps/api` |
-| `FactoryService` | Validate chunks, dispatch render jobs | `apps/api` |
-| `FactoryProcessor` | Orchestrate the render pipeline | `apps/worker` |
-| `RendererService` | Build and execute FFmpeg command chains | `apps/worker` |
-| `CaptionService` | Generate ASS/SRT subtitle files from transcript | `apps/worker` |
-| `FramingService` | Calculate crop coordinates for face tracking | `apps/worker` |
+| Component           | Responsibility                                  | Runs In       |
+| ------------------- | ----------------------------------------------- | ------------- |
+| `FactoryController` | Trigger renders, list assets                    | `apps/api`    |
+| `FactoryService`    | Validate chunks, dispatch render jobs           | `apps/api`    |
+| `FactoryProcessor`  | Orchestrate the render pipeline                 | `apps/worker` |
+| `RendererService`   | Build and execute FFmpeg command chains         | `apps/worker` |
+| `CaptionService`    | Generate ASS/SRT subtitle files from transcript | `apps/worker` |
+| `FramingService`    | Calculate crop coordinates for face tracking    | `apps/worker` |
 
 ---
 
@@ -54,16 +54,17 @@ Chunk (raw segment) → Auto-Frame → Kinetic Captions → [B-Roll] → Rendere
 
 ### 3.1 `factory.render`
 
-| Field | Value |
-|-------|-------|
-| Queue | `factory-queue` |
-| Type | `render` |
-| Priority | Normal |
-| Retries | 2 |
-| Timeout | 10 minutes |
+| Field       | Value             |
+| ----------- | ----------------- |
+| Queue       | `factory-queue`   |
+| Type        | `render`          |
+| Priority    | Normal            |
+| Retries     | 2                 |
+| Timeout     | 10 minutes        |
 | Concurrency | 2 (CPU/GPU-heavy) |
 
 **Payload:**
+
 ```typescript
 interface RenderJobPayload {
   chunkId: string;
@@ -71,13 +72,14 @@ interface RenderJobPayload {
   renderProfileId: string;
   outputFormat: 'mp4';
   resolution: {
-    width: number;  // 1080
+    width: number; // 1080
     height: number; // 1920
   };
 }
 ```
 
 **Processing Steps:**
+
 1. Update `Asset.status` → `RENDERING`
 2. Download chunk video from Cloud Storage to temp directory
 3. Load transcript words for this chunk's time range
@@ -124,6 +126,7 @@ ffmpeg -y \
 ### 4.2 Hardware Acceleration Variants
 
 **NVIDIA (NVENC):**
+
 ```bash
 -c:v h264_nvenc \
 -preset p4 \
@@ -134,6 +137,7 @@ ffmpeg -y \
 ```
 
 **Apple (VideoToolbox):**
+
 ```bash
 -c:v h264_videotoolbox \
 -q:v 65 \
@@ -141,14 +145,15 @@ ffmpeg -y \
 ```
 
 **Selection Logic:**
+
 ```typescript
 function getEncoder(): string {
   const hwAccel = process.env.FFMPEG_HW_ACCEL || 'auto';
-  
+
   if (hwAccel === 'none') return 'libx264';
   if (hwAccel === 'nvenc') return 'h264_nvenc';
   if (hwAccel === 'videotoolbox') return 'h264_videotoolbox';
-  
+
   // auto-detect
   if (hasNvenc()) return 'h264_nvenc';
   if (hasVideoToolbox()) return 'h264_videotoolbox';
@@ -158,15 +163,15 @@ function getEncoder(): string {
 
 ### 4.3 Performance Rules
 
-| Rule | Rationale |
-|------|-----------|
-| Use `-preset medium` (CPU) or `-preset p4` (NVENC) | Balance speed/quality |
-| Use CRF 18 (not bitrate targeting) | Consistent quality regardless of content |
-| Use `-movflags +faststart` | Enables streaming before full download |
-| Use `-r 30` | Normalize to 30fps for social media |
-| Use `lanczos` scaling | Highest quality downscale algorithm |
-| Avoid re-encoding audio when possible | Use `-c:a copy` if input is already AAC |
-| Process one segment at a time | Avoid memory explosion on large files |
+| Rule                                               | Rationale                                |
+| -------------------------------------------------- | ---------------------------------------- |
+| Use `-preset medium` (CPU) or `-preset p4` (NVENC) | Balance speed/quality                    |
+| Use CRF 18 (not bitrate targeting)                 | Consistent quality regardless of content |
+| Use `-movflags +faststart`                         | Enables streaming before full download   |
+| Use `-r 30`                                        | Normalize to 30fps for social media      |
+| Use `lanczos` scaling                              | Highest quality downscale algorithm      |
+| Avoid re-encoding audio when possible              | Use `-c:a copy` if input is already AAC  |
+| Process one segment at a time                      | Avoid memory explosion on large files    |
 
 ---
 
@@ -206,7 +211,10 @@ For MVP: implement **static center crop** with face-detection-based X offset. Dy
 Use FFmpeg's built-in face detection when available, or fall back to sampling frames:
 
 ```typescript
-async function detectFacePosition(videoPath: string, timestamp: number): Promise<{x: number, y: number}> {
+async function detectFacePosition(
+  videoPath: string,
+  timestamp: number,
+): Promise<{ x: number; y: number }> {
   // Extract frame at timestamp
   // Run face detection (OpenCV via opencv4nodejs, or call Python script)
   // Return center coordinates of detected face bounding box
@@ -223,6 +231,7 @@ async function detectFacePosition(videoPath: string, timestamp: number): Promise
 Captions are rendered as ASS (Advanced SubStation Alpha) subtitles burned into the video. The style is configurable via `RenderProfile.captionStyle`.
 
 **Default Style:**
+
 ```json
 {
   "fontFamily": "Montserrat",
@@ -242,13 +251,13 @@ Captions are rendered as ASS (Advanced SubStation Alpha) subtitles burned into t
 
 ### 6.2 Animation Types
 
-| Animation | Description | Implementation |
-|-----------|-------------|----------------|
-| `word-pop` | Each word pops in one at a time | ASS `\fad` + `\fscx` + `\fscy` transform |
-| `word-highlight` | All words visible, current word changes color | ASS `\c` color override per word |
-| `karaoke` | Standard karaoke fill effect | ASS `\k` tags |
-| `bounce` | Words bounce in with spring physics | ASS `\move` + `\fscx` keyframes |
-| `none` | Static subtitles, no animation | Standard SRT-style display |
+| Animation        | Description                                   | Implementation                           |
+| ---------------- | --------------------------------------------- | ---------------------------------------- |
+| `word-pop`       | Each word pops in one at a time               | ASS `\fad` + `\fscx` + `\fscy` transform |
+| `word-highlight` | All words visible, current word changes color | ASS `\c` color override per word         |
+| `karaoke`        | Standard karaoke fill effect                  | ASS `\k` tags                            |
+| `bounce`         | Words bounce in with spring physics           | ASS `\move` + `\fscx` keyframes          |
+| `none`           | Static subtitles, no animation                | Standard SRT-style display               |
 
 ### 6.3 ASS File Generation
 
@@ -263,7 +272,7 @@ function generateASS(
   // 2. Calculate display timing for each line
   // 3. Apply animation transforms per word
   // 4. Output valid ASS script
-  
+
   const header = `
 [Script Info]
 ScriptType: v4.00+
@@ -289,40 +298,40 @@ Full JSON schema for `RenderProfile` configuration:
 interface RenderProfileConfig {
   captionStyle: {
     fontFamily: string;
-    fontSize: number;         // 24-96px
+    fontSize: number; // 24-96px
     fontWeight: 'normal' | 'bold';
-    primaryColor: string;     // hex
-    highlightColor: string;   // hex
-    strokeColor: string;      // hex
-    strokeWidth: number;      // 0-5px
-    backgroundColor: string;  // hex or 'transparent'
+    primaryColor: string; // hex
+    highlightColor: string; // hex
+    strokeColor: string; // hex
+    strokeWidth: number; // 0-5px
+    backgroundColor: string; // hex or 'transparent'
     animation: 'word-pop' | 'word-highlight' | 'karaoke' | 'bounce' | 'none';
     position: 'top' | 'center' | 'bottom';
-    maxWordsPerLine: number;  // 3-8
-    lineSpacing: number;      // 1.0-2.0
+    maxWordsPerLine: number; // 3-8
+    lineSpacing: number; // 1.0-2.0
   };
-  
+
   frameConfig: {
     aspectRatio: '9:16' | '1:1' | '4:5';
     faceTracking: boolean;
-    padding: number;          // px around face detection box
-    zoomLevel: number;        // 1.0-1.5
+    padding: number; // px around face detection box
+    zoomLevel: number; // 1.0-1.5
   };
-  
+
   brollConfig: {
     enabled: boolean;
-    sources: string[];        // stock footage library IDs
-    keywords: string[];       // contextual matching keywords
-    maxDuration: number;      // max B-roll clip duration (seconds)
-    frequency: number;        // insert every N seconds
+    sources: string[]; // stock footage library IDs
+    keywords: string[]; // contextual matching keywords
+    maxDuration: number; // max B-roll clip duration (seconds)
+    frequency: number; // insert every N seconds
   };
-  
+
   outputConfig: {
     resolution: { width: number; height: number };
     codec: 'h264' | 'h265';
-    quality: number;          // CRF value (15-28)
-    fps: number;              // 24, 30, or 60
-    audioBitrate: number;     // kbps
+    quality: number; // CRF value (15-28)
+    fps: number; // 24, 30, or 60
+    audioBitrate: number; // kbps
   };
 }
 ```
@@ -338,19 +347,20 @@ frame= 1234 fps= 62 q=18.0 size=   12800kB time=00:00:41.13 bitrate=2548.2kbits/
 ```
 
 **Parsing Regex:**
+
 ```typescript
 const progressRegex = /time=(\d{2}):(\d{2}):(\d{2})\.(\d{2})/;
 
 function parseProgress(line: string, totalDuration: number): number {
   const match = line.match(progressRegex);
   if (!match) return -1;
-  
-  const currentTime = 
-    parseInt(match[1]) * 3600 + 
-    parseInt(match[2]) * 60 + 
-    parseInt(match[3]) + 
+
+  const currentTime =
+    parseInt(match[1]) * 3600 +
+    parseInt(match[2]) * 60 +
+    parseInt(match[3]) +
     parseInt(match[4]) / 100;
-  
+
   return Math.min(Math.round((currentTime / totalDuration) * 100), 100);
 }
 ```
@@ -359,15 +369,15 @@ function parseProgress(line: string, totalDuration: number): number {
 
 ## 9. Error Handling
 
-| Error | Detection | Action |
-|-------|-----------|--------|
-| FFmpeg not found | `which ffmpeg` fails | Fail job, log installation guide |
-| Invalid input file | FFmpeg exits immediately | Mark FAILED, clean temp files |
-| Insufficient disk space | Pre-check before render | Reject job, alert |
-| Font not found | ASS render warning | Fall back to default font |
-| GPU encoder unavailable | NVENC init failure | Fall back to CPU (`libx264`) |
-| Process killed (OOM) | Exit code 137 | Retry with lower concurrency |
-| Render exceeds timeout | 10 minute limit | Kill process, mark FAILED |
+| Error                   | Detection                | Action                           |
+| ----------------------- | ------------------------ | -------------------------------- |
+| FFmpeg not found        | `which ffmpeg` fails     | Fail job, log installation guide |
+| Invalid input file      | FFmpeg exits immediately | Mark FAILED, clean temp files    |
+| Insufficient disk space | Pre-check before render  | Reject job, alert                |
+| Font not found          | ASS render warning       | Fall back to default font        |
+| GPU encoder unavailable | NVENC init failure       | Fall back to CPU (`libx264`)     |
+| Process killed (OOM)    | Exit code 137            | Retry with lower concurrency     |
+| Render exceeds timeout  | 10 minute limit          | Kill process, mark FAILED        |
 
 ---
 
@@ -393,18 +403,18 @@ function parseProgress(line: string, totalDuration: number): number {
 
 ### 11.1 Unit Tests
 
-| Test | File |
-|------|------|
+| Test                        | File                       |
+| --------------------------- | -------------------------- |
 | FFmpeg command construction | `renderer.service.spec.ts` |
-| ASS subtitle generation | `caption.service.spec.ts` |
-| Crop coordinate calculation | `framing.service.spec.ts` |
-| Progress parsing | `renderer.service.spec.ts` |
-| HW acceleration detection | `renderer.service.spec.ts` |
+| ASS subtitle generation     | `caption.service.spec.ts`  |
+| Crop coordinate calculation | `framing.service.spec.ts`  |
+| Progress parsing            | `renderer.service.spec.ts` |
+| HW acceleration detection   | `renderer.service.spec.ts` |
 
 ### 11.2 Integration Tests
 
-| Test | File |
-|------|------|
+| Test                                 | File                          |
+| ------------------------------------ | ----------------------------- |
 | Full render pipeline with test video | `factory.integration-spec.ts` |
 | Render with different caption styles | `factory.integration-spec.ts` |
-| GPU fallback to CPU | `factory.integration-spec.ts` |
+| GPU fallback to CPU                  | `factory.integration-spec.ts` |

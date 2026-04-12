@@ -18,14 +18,14 @@ URL Input → Download (yt-dlp) → Transcribe (Whisper) → Analyze (LLM) → S
 
 ### Responsibilities
 
-| Component | Responsibility | Runs In |
-|-----------|---------------|---------|
-| `IngestorController` | Accept source URLs, list sources | `apps/api` |
-| `IngestorService` | Validate, persist, dispatch jobs | `apps/api` |
-| `IngestorProcessor` | Execute download, transcription, analysis | `apps/worker` |
-| `DownloaderService` | Wrap `yt-dlp` for media acquisition | `apps/worker` |
-| `TranscriberService` | Wrap Whisper API for speech-to-text | `apps/worker` |
-| `AnalyzerService` | Wrap LLM for viral spike detection | `apps/worker` |
+| Component            | Responsibility                            | Runs In       |
+| -------------------- | ----------------------------------------- | ------------- |
+| `IngestorController` | Accept source URLs, list sources          | `apps/api`    |
+| `IngestorService`    | Validate, persist, dispatch jobs          | `apps/api`    |
+| `IngestorProcessor`  | Execute download, transcription, analysis | `apps/worker` |
+| `DownloaderService`  | Wrap `yt-dlp` for media acquisition       | `apps/worker` |
+| `TranscriberService` | Wrap Whisper API for speech-to-text       | `apps/worker` |
+| `AnalyzerService`    | Wrap LLM for viral spike detection        | `apps/worker` |
 
 ---
 
@@ -58,16 +58,17 @@ URL Input → Download (yt-dlp) → Transcribe (Whisper) → Analyze (LLM) → S
 
 ### 3.1 `ingest.download`
 
-| Field | Value |
-|-------|-------|
-| Queue | `ingestor-queue` |
-| Type | `download` |
-| Priority | Normal |
-| Retries | 3 |
-| Backoff | Exponential (1s, 4s, 16s) |
-| Timeout | 30 minutes |
+| Field    | Value                     |
+| -------- | ------------------------- |
+| Queue    | `ingestor-queue`          |
+| Type     | `download`                |
+| Priority | Normal                    |
+| Retries  | 3                         |
+| Backoff  | Exponential (1s, 4s, 16s) |
+| Timeout  | 30 minutes                |
 
 **Payload:**
+
 ```typescript
 interface DownloadJobPayload {
   sourceId: string;
@@ -78,6 +79,7 @@ interface DownloadJobPayload {
 ```
 
 **Processing Steps:**
+
 1. Update `Source.status` → `DOWNLOADING`
 2. Run `yt-dlp` to download media to temp directory
 3. Extract metadata (title, duration, thumbnail, platform)
@@ -89,15 +91,16 @@ interface DownloadJobPayload {
 
 ### 3.2 `ingest.transcribe`
 
-| Field | Value |
-|-------|-------|
-| Queue | `ingestor-queue` |
-| Type | `transcribe` |
-| Priority | Normal |
-| Retries | 2 |
-| Timeout | 15 minutes |
+| Field    | Value            |
+| -------- | ---------------- |
+| Queue    | `ingestor-queue` |
+| Type     | `transcribe`     |
+| Priority | Normal           |
+| Retries  | 2                |
+| Timeout  | 15 minutes       |
 
 **Payload:**
+
 ```typescript
 interface TranscribeJobPayload {
   sourceId: string;
@@ -108,6 +111,7 @@ interface TranscribeJobPayload {
 ```
 
 **Processing Steps:**
+
 1. Update `Source.status` → `TRANSCRIBING`
 2. Download audio from Cloud Storage (or extract from video)
 3. Send to Whisper API with `response_format: verbose_json` and `timestamp_granularities: ["word"]`
@@ -118,15 +122,16 @@ interface TranscribeJobPayload {
 
 ### 3.3 `ingest.analyze`
 
-| Field | Value |
-|-------|-------|
-| Queue | `ingestor-queue` |
-| Type | `analyze` |
-| Priority | Normal |
-| Retries | 2 |
-| Timeout | 5 minutes |
+| Field    | Value            |
+| -------- | ---------------- |
+| Queue    | `ingestor-queue` |
+| Type     | `analyze`        |
+| Priority | Normal           |
+| Retries  | 2                |
+| Timeout  | 5 minutes        |
 
 **Payload:**
+
 ```typescript
 interface AnalyzeJobPayload {
   sourceId: string;
@@ -136,6 +141,7 @@ interface AnalyzeJobPayload {
 ```
 
 **Processing Steps:**
+
 1. Update `Source.status` → `ANALYZING`
 2. Load transcript text from DB
 3. Call LLM with analysis prompt (see Section 5)
@@ -169,6 +175,7 @@ yt-dlp \
 ### 4.2 Progress Tracking
 
 Parse `yt-dlp` stdout for progress updates:
+
 ```
 [download]  45.2% of 1.23GiB at 12.5MiB/s ETA 00:42
 ```
@@ -179,23 +186,23 @@ Map to `job.updateProgress()`.
 
 ### 4.3 Platform Support
 
-| Platform | URL Pattern | Notes |
-|----------|------------|-------|
-| YouTube | `youtube.com/watch?v=`, `youtu.be/` | Stable, primary target |
-| TikTok | `tiktok.com/@user/video/` | May require cookies |
-| Twitch | `twitch.tv/videos/`, clips | VODs and clips |
-| Instagram | `instagram.com/reel/` | Requires login cookies |
-| Twitter/X | `x.com/*/status/` | Requires cookies |
+| Platform  | URL Pattern                         | Notes                  |
+| --------- | ----------------------------------- | ---------------------- |
+| YouTube   | `youtube.com/watch?v=`, `youtu.be/` | Stable, primary target |
+| TikTok    | `tiktok.com/@user/video/`           | May require cookies    |
+| Twitch    | `twitch.tv/videos/`, clips          | VODs and clips         |
+| Instagram | `instagram.com/reel/`               | Requires login cookies |
+| Twitter/X | `x.com/*/status/`                   | Requires cookies       |
 
 ### 4.4 Error Handling
 
-| Error | Action |
-|-------|--------|
+| Error                      | Action                                |
+| -------------------------- | ------------------------------------- |
 | `ERROR: Video unavailable` | Mark source as `FAILED`, record error |
-| `ERROR: HTTP Error 429` | Retry with backoff |
-| `ERROR: Unable to extract` | Retry once, then fail |
-| Process timeout (30 min) | Kill process, mark `FAILED` |
-| Disk space < 1GB | Reject job, alert |
+| `ERROR: HTTP Error 429`    | Retry with backoff                    |
+| `ERROR: Unable to extract` | Retry once, then fail                 |
+| Process timeout (30 min)   | Kill process, mark `FAILED`           |
+| Disk space < 1GB           | Reject job, alert                     |
 
 ---
 
@@ -204,14 +211,14 @@ Map to `job.updateProgress()`.
 ### 5.1 System Prompt
 
 ```
-You are a viral content analyst. You analyze podcast and video transcripts to identify 
-segments with the highest potential to go viral on short-form social media (TikTok, 
+You are a viral content analyst. You analyze podcast and video transcripts to identify
+segments with the highest potential to go viral on short-form social media (TikTok,
 Instagram Reels, YouTube Shorts).
 
-Your task: Given a transcript with timestamps, identify "Viral Spikes" — segments that 
+Your task: Given a transcript with timestamps, identify "Viral Spikes" — segments that
 would make compelling 15-90 second clips.
 
-Score each spike 0-100 based on: humor, controversy, emotional resonance, surprise 
+Score each spike 0-100 based on: humor, controversy, emotional resonance, surprise
 factor, and retention hooks (questions, cliffhangers, bold statements).
 ```
 
@@ -227,7 +234,7 @@ TRANSCRIPT:
 
 Return a JSON array of viral spikes. Each spike must have:
 - startTime: float (seconds)
-- endTime: float (seconds)  
+- endTime: float (seconds)
 - confidenceScore: int (0-100)
 - category: "HUMOR" | "CONTROVERSY" | "HOOK" | "EMOTIONAL" | "EDUCATIONAL"
 - suggestedTitle: string (catchy, < 80 chars)
@@ -353,20 +360,20 @@ MAX_DOWNLOAD_SIZE_GB=10
 
 ### 9.1 Unit Tests
 
-| Test | File |
-|------|------|
-| URL validation (supported platforms) | `ingestor.service.spec.ts` |
-| yt-dlp command construction | `downloader.service.spec.ts` |
-| yt-dlp progress parsing | `downloader.service.spec.ts` |
-| Whisper response parsing | `transcriber.service.spec.ts` |
-| LLM response parsing & validation | `analyzer.service.spec.ts` |
-| Overlapping spike resolution | `analyzer.service.spec.ts` |
+| Test                                 | File                          |
+| ------------------------------------ | ----------------------------- |
+| URL validation (supported platforms) | `ingestor.service.spec.ts`    |
+| yt-dlp command construction          | `downloader.service.spec.ts`  |
+| yt-dlp progress parsing              | `downloader.service.spec.ts`  |
+| Whisper response parsing             | `transcriber.service.spec.ts` |
+| LLM response parsing & validation    | `analyzer.service.spec.ts`    |
+| Overlapping spike resolution         | `analyzer.service.spec.ts`    |
 
 ### 9.2 Integration Tests
 
-| Test | File |
-|------|------|
-| POST /sources creates source and dispatches job | `ingestor.e2e-spec.ts` |
-| GET /sources returns workspace-scoped results | `ingestor.e2e-spec.ts` |
-| Duplicate URL in same workspace returns 409 | `ingestor.e2e-spec.ts` |
+| Test                                               | File                           |
+| -------------------------------------------------- | ------------------------------ |
+| POST /sources creates source and dispatches job    | `ingestor.e2e-spec.ts`         |
+| GET /sources returns workspace-scoped results      | `ingestor.e2e-spec.ts`         |
+| Duplicate URL in same workspace returns 409        | `ingestor.e2e-spec.ts`         |
 | Full ingest pipeline (mock yt-dlp + Whisper + LLM) | `ingestor.integration-spec.ts` |

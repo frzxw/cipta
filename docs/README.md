@@ -18,53 +18,53 @@ This `/docs` directory is the **Single Source of Truth** for the Cipta project. 
 
 ### Core Documents
 
-| Document | Purpose | Audience |
-|----------|---------|----------|
-| [PRD.md](./PRD.md) | Product Requirements Document — features, user stories, acceptance criteria | PM, Dev, AI Agents |
-| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture, module boundaries, data flow, infrastructure | Senior Dev, AI Agents |
-| [ERD.md](./ERD.md) | Entity-Relationship Diagram and full database schema specification | Backend Dev, AI Agents |
-| [API.md](./API.md) | REST API contract — every endpoint, request/response schema, auth | Frontend Dev, Backend Dev, AI Agents |
-| [DESIGN.md](./DESIGN.md) | UI/UX design system — tokens, components, page layouts | Frontend Dev, AI Agents |
+| Document                             | Purpose                                                                     | Audience                             |
+| ------------------------------------ | --------------------------------------------------------------------------- | ------------------------------------ |
+| [PRD.md](./PRD.md)                   | Product Requirements Document — features, user stories, acceptance criteria | PM, Dev, AI Agents                   |
+| [ARCHITECTURE.md](./ARCHITECTURE.md) | System architecture, module boundaries, data flow, infrastructure           | Senior Dev, AI Agents                |
+| [ERD.md](./ERD.md)                   | Entity-Relationship Diagram and full database schema specification          | Backend Dev, AI Agents               |
+| [API.md](./API.md)                   | REST API contract — every endpoint, request/response schema, auth           | Frontend Dev, Backend Dev, AI Agents |
+| [DESIGN.md](./DESIGN.md)             | UI/UX design system — tokens, components, page layouts                      | Frontend Dev, AI Agents              |
 
 ### Detailed Specifications
 
-| Document | Purpose |
-|----------|---------|
-| [specs/INGESTOR.md](./specs/INGESTOR.md) | The Ingestor module — scraping, transcription, LLM analysis |
-| [specs/FACTORY.md](./specs/FACTORY.md) | The Factory module — video production pipeline, FFmpeg commands |
-| [specs/GUARDIAN.md](./specs/GUARDIAN.md) | The Guardian module — anti-shadowban, fingerprint randomization |
-| [specs/FLEET.md](./specs/FLEET.md) | The Fleet module — distribution, scheduling, account clusters |
-| [specs/WORKER.md](./specs/WORKER.md) | Worker architecture — BullMQ jobs, decoupling strategy, queue design |
-| [specs/AUTH.md](./specs/AUTH.md) | Authentication & authorization — JWT, RBAC, session management |
+| Document                                 | Purpose                                                              |
+| ---------------------------------------- | -------------------------------------------------------------------- |
+| [specs/INGESTOR.md](./specs/INGESTOR.md) | The Ingestor module — scraping, transcription, LLM analysis          |
+| [specs/FACTORY.md](./specs/FACTORY.md)   | The Factory module — video production pipeline, FFmpeg commands      |
+| [specs/GUARDIAN.md](./specs/GUARDIAN.md) | The Guardian module — anti-shadowban, fingerprint randomization      |
+| [specs/FLEET.md](./specs/FLEET.md)       | The Fleet module — distribution, scheduling, account clusters        |
+| [specs/WORKER.md](./specs/WORKER.md)     | Worker architecture — BullMQ jobs, decoupling strategy, queue design |
+| [specs/AUTH.md](./specs/AUTH.md)         | Authentication & authorization — JWT, RBAC, session management       |
 
 ### Operational Runbooks (`runbooks/`)
 
-| Document | Purpose |
-|----------|---------|
-| [runbooks/README.md](./runbooks/README.md) | Runbook index, severity levels, quick health checks |
-| [runbooks/DEPLOYMENT.md](./runbooks/DEPLOYMENT.md) | Dockerfiles, CI/CD pipeline, migration ordering, rollback |
-| [runbooks/DATABASE.md](./runbooks/DATABASE.md) | Connection pooling, backups, restores, performance monitoring |
-| [runbooks/WORKER_OPS.md](./runbooks/WORKER_OPS.md) | Queue inspection, stuck jobs, scaling, FFmpeg debugging |
-| [runbooks/INCIDENT_RESPONSE.md](./runbooks/INCIDENT_RESPONSE.md) | Triage, severity classification, postmortem template |
-| [runbooks/TROUBLESHOOTING.md](./runbooks/TROUBLESHOOTING.md) | Common errors and fixes for every component |
+| Document                                                         | Purpose                                                       |
+| ---------------------------------------------------------------- | ------------------------------------------------------------- |
+| [runbooks/README.md](./runbooks/README.md)                       | Runbook index, severity levels, quick health checks           |
+| [runbooks/DEPLOYMENT.md](./runbooks/DEPLOYMENT.md)               | Dockerfiles, CI/CD pipeline, migration ordering, rollback     |
+| [runbooks/DATABASE.md](./runbooks/DATABASE.md)                   | Connection pooling, backups, restores, performance monitoring |
+| [runbooks/WORKER_OPS.md](./runbooks/WORKER_OPS.md)               | Queue inspection, stuck jobs, scaling, FFmpeg debugging       |
+| [runbooks/INCIDENT_RESPONSE.md](./runbooks/INCIDENT_RESPONSE.md) | Triage, severity classification, postmortem template          |
+| [runbooks/TROUBLESHOOTING.md](./runbooks/TROUBLESHOOTING.md)     | Common errors and fixes for every component                   |
 
 ### Engineering Standards
 
-| Document | Purpose |
-|----------|---------|
-| [TESTING.md](./TESTING.md) | Testing strategy — pyramid, frameworks, coverage targets, CI pipeline, mocking patterns |
-| [SECURITY.md](./SECURITY.md) | Threat model, encryption, input validation, multi-tenancy isolation |
-| [OBSERVABILITY.md](./OBSERVABILITY.md) | Structured logging, Prometheus metrics, alerting rules, Sentry, dashboards |
-| [CONFIG.md](./CONFIG.md) | Every environment variable — master list, example `.env` files, startup validation |
-| [INFRASTRUCTURE.md](./INFRASTRUCTURE.md) | Docker, networking, cloud services, storage architecture, disaster recovery |
+| Document                                 | Purpose                                                                                 |
+| ---------------------------------------- | --------------------------------------------------------------------------------------- |
+| [TESTING.md](./TESTING.md)               | Testing strategy — pyramid, frameworks, coverage targets, CI pipeline, mocking patterns |
+| [SECURITY.md](./SECURITY.md)             | Threat model, encryption, input validation, multi-tenancy isolation                     |
+| [OBSERVABILITY.md](./OBSERVABILITY.md)   | Structured logging, Prometheus metrics, alerting rules, Sentry, dashboards              |
+| [CONFIG.md](./CONFIG.md)                 | Every environment variable — master list, example `.env` files, startup validation      |
+| [INFRASTRUCTURE.md](./INFRASTRUCTURE.md) | Docker, networking, cloud services, storage architecture, disaster recovery             |
 
 ### Planning & Process
 
-| Document | Purpose |
-|----------|---------|
-| [ROADMAP.md](./ROADMAP.md) | Phased implementation plan — 4 phases, task-to-spec mapping, Definition of Done |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Development workflow, branching strategy, commit conventions |
-| [GLOSSARY.md](./GLOSSARY.md) | Domain-specific terminology dictionary |
+| Document                             | Purpose                                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------------- |
+| [ROADMAP.md](./ROADMAP.md)           | Phased implementation plan — 4 phases, task-to-spec mapping, Definition of Done |
+| [CONTRIBUTING.md](./CONTRIBUTING.md) | Development workflow, branching strategy, commit conventions                    |
+| [GLOSSARY.md](./GLOSSARY.md)         | Domain-specific terminology dictionary                                          |
 
 ---
 
