@@ -26,6 +26,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @cipta/database exec prisma generate
       - run: pnpm lint
 
   type-check:
@@ -49,7 +50,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm format --check
+      - run: pnpm format:check
 
   # ─────────────────────────────────────────────
   # Stage 2: Unit tests (parallel per package)

@@ -15,7 +15,39 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check Dependency Review support
+        id: support
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const { data } = await github.request('GET /repos/{owner}/{repo}', {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+
+              const security = data.security_and_analysis || {};
+              const dependencyGraphEnabled = security.dependency_graph?.status === 'enabled';
+              const advancedSecurityEnabled = security.advanced_security?.status === 'enabled';
+              const supported = dependencyGraphEnabled && advancedSecurityEnabled;
+
+              core.setOutput('supported', supported ? 'true' : 'false');
+
+              if (!supported) {
+                core.notice(
+                  'Dependency review is not supported for this repository. ' +
+                    'Enable Dependency Graph and GitHub Advanced Security to enforce it.',
+                );
+              }
+            } catch (error) {
+              core.notice(
+                'Could not determine dependency review support from repository settings. Skipping check.',
+              );
+              core.setOutput('supported', 'false');
+            }
+
       - name: Dependency Review
+        if: steps.support.outputs.supported == 'true'
         uses: actions/dependency-review-action@v4
         with:
           fail-on-severity: high
