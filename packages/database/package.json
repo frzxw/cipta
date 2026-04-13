@@ -19,7 +19,12 @@
   },
   "devDependencies": {
     "@cipta/typescript-config": "workspace:*",
+    "@types/node": "^25.6.0",
     "prisma": "^6.9.0",
+    "tsx": "^4.21.0",
     "typescript": "5.9.2"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   }
 }
