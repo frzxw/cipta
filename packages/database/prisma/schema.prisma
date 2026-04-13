@@ -122,9 +122,29 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  workspaces WorkspaceMember[]
+  workspaces     WorkspaceMember[]
+  refreshTokens  RefreshToken[]
 
   @@map("users")
+}
+
+model RefreshToken {
+  id               String    @id @default(uuid()) @db.Uuid
+  userId           String    @db.Uuid
+  jti              String    @unique
+  family           String
+  refreshTokenHash String
+  expiresAt        DateTime
+  usedAt           DateTime?
+  revokedAt        DateTime?
+  createdAt        DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([family])
+  @@index([expiresAt])
+  @@map("refresh_tokens")
 }
 
 model Workspace {
