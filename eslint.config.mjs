@@ -62,6 +62,10 @@ export default tseslint.config(
     },
   },
   {
+    files: ['e2e/**/*.{ts,tsx}'],
+    extends: [tseslint.configs.disableTypeChecked],
+  },
+  {
     ignores: [
       'dist/**',
       'node_modules/**',
