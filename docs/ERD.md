@@ -13,6 +13,7 @@
 ```mermaid
 erDiagram
     User ||--o{ WorkspaceMember : "belongs to"
+  User ||--o{ RefreshToken : "has"
     Workspace ||--o{ WorkspaceMember : "has"
     Workspace ||--o{ Source : "owns"
     Workspace ||--o{ Project : "owns"
@@ -65,6 +66,18 @@ erDiagram
         uuid workspaceId FK
         enum role
         datetime joinedAt
+    }
+
+    RefreshToken {
+      uuid id PK
+      uuid userId FK
+      string jti UK
+      string family
+      string refreshTokenHash
+      datetime expiresAt
+      datetime usedAt
+      datetime revokedAt
+      datetime createdAt
     }
 
     Project {
