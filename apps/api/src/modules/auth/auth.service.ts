@@ -5,13 +5,11 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { WorkspaceRole } from '@cipta/database';
+import { type Prisma, WorkspaceRole } from '@cipta/database';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
 import { LoginDto } from './dto/login.dto';
-import { LogoutDto } from './dto/logout.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
 
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
@@ -30,10 +28,42 @@ interface AuthUserClaims {
   workspaces: AuthWorkspace[];
 }
 
-interface RefreshTokenRecord {
+interface IssuedTokenPair {
+  accessToken: string;
+  refreshToken: string;
+  refreshTokenHash: string;
+  jti: string;
+  expiresAt: Date;
+}
+
+type RefreshTokenModelDelegate = {
+  findUnique(args: {
+    where: Prisma.RefreshTokenWhereUniqueInput;
+  }): Promise<StoredRefreshToken | null>;
+  create(args: {
+    data: Prisma.RefreshTokenCreateInput;
+  }): Promise<StoredRefreshToken>;
+  updateMany(args: {
+    where: Prisma.RefreshTokenWhereInput;
+    data: Prisma.RefreshTokenUpdateManyMutationInput;
+  }): Promise<Prisma.BatchPayload>;
+};
+
+interface StoredRefreshToken {
+  id: string;
   userId: string;
+  jti: string;
   family: string;
   refreshTokenHash: string;
+  expiresAt: Date;
+  usedAt: Date | null;
+  revokedAt: Date | null;
+}
+
+export interface RefreshTokenClaims {
+  sub: string;
+  jti: string;
+  family: string;
 }
 
 export interface AuthTokenPair {
@@ -69,7 +99,11 @@ export interface LoginResponse {
 
 @Injectable()
 export class AuthService {
-  private readonly refreshTokens = new Map<string, RefreshTokenRecord>();
+  private get refreshTokenModel(): RefreshTokenModelDelegate {
+    return (
+      this.prisma as unknown as { refreshToken: RefreshTokenModelDelegate }
+    ).refreshToken;
+  }
 
   constructor(
     private readonly prisma: PrismaService,
@@ -124,14 +158,17 @@ export class AuthService {
       },
     ];
 
-    const tokens = await this.issueTokenPair(
+    const familyId = randomUUID();
+    const issuedTokens = await this.issueTokenPair(
       {
         id: created.user.id,
         email: created.user.email,
         workspaces,
       },
-      randomUUID(),
+      familyId,
     );
+
+    await this.persistRefreshToken(created.user.id, issuedTokens, familyId);
 
     return {
       user: {
@@ -146,7 +183,7 @@ export class AuthService {
         slug: created.workspace.slug,
         role: WorkspaceRole.OWNER,
       },
-      tokens,
+      tokens: this.toAuthTokenPair(issuedTokens),
     };
   }
 
@@ -184,14 +221,17 @@ export class AuthService {
       role: member.role,
     }));
 
-    const tokens = await this.issueTokenPair(
+    const familyId = randomUUID();
+    const issuedTokens = await this.issueTokenPair(
       {
         id: user.id,
         email: user.email,
         workspaces,
       },
-      randomUUID(),
+      familyId,
     );
+
+    await this.persistRefreshToken(user.id, issuedTokens, familyId);
 
     return {
       user: {
@@ -199,30 +239,43 @@ export class AuthService {
         email: user.email,
         displayName: user.displayName,
       },
-      tokens,
+      tokens: this.toAuthTokenPair(issuedTokens),
     };
   }
 
-  async refresh(dto: RefreshDto): Promise<AuthTokenPair> {
-    const payload = await this.verifyRefreshToken(dto.refreshToken);
+  async refresh(input: {
+    refreshToken: string;
+    claims: RefreshTokenClaims;
+  }): Promise<AuthTokenPair> {
+    const storedToken = await this.refreshTokenModel.findUnique({
+      where: { jti: input.claims.jti },
+    });
 
-    const storedToken = this.refreshTokens.get(payload.jti);
-    if (!storedToken) {
-      this.revokeTokenFamily(payload.family);
+    if (
+      !storedToken ||
+      storedToken.revokedAt ||
+      storedToken.usedAt ||
+      storedToken.family !== input.claims.family ||
+      storedToken.userId !== input.claims.sub
+    ) {
+      await this.revokeTokenFamily(input.claims.family);
       throw new UnauthorizedException('Refresh token invalid or already used');
     }
 
     const isTokenMatch = await bcrypt.compare(
-      dto.refreshToken,
+      input.refreshToken,
       storedToken.refreshTokenHash,
     );
 
     if (!isTokenMatch) {
-      this.revokeTokenFamily(storedToken.family);
+      await this.revokeTokenFamily(storedToken.family);
       throw new UnauthorizedException('Refresh token invalid or already used');
     }
 
-    this.refreshTokens.delete(payload.jti);
+    if (storedToken.expiresAt.getTime() <= Date.now()) {
+      await this.revokeTokenFamily(storedToken.family);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
 
     const user = await this.prisma.user.findUnique({
       where: { id: storedToken.userId },
@@ -249,7 +302,7 @@ export class AuthService {
       role: member.role,
     }));
 
-    return this.issueTokenPair(
+    const nextTokens = await this.issueTokenPair(
       {
         id: user.id,
         email: user.email,
@@ -257,11 +310,53 @@ export class AuthService {
       },
       storedToken.family,
     );
+
+    const now = new Date();
+    const rotatedCount = await this.refreshTokenModel.updateMany({
+      where: {
+        id: storedToken.id,
+        usedAt: null,
+        revokedAt: null,
+      },
+      data: {
+        usedAt: now,
+        revokedAt: now,
+      },
+    });
+
+    if (rotatedCount.count === 0) {
+      await this.revokeTokenFamily(storedToken.family);
+      throw new UnauthorizedException('Refresh token invalid or already used');
+    }
+
+    await this.persistRefreshToken(user.id, nextTokens, storedToken.family);
+
+    return this.toAuthTokenPair(nextTokens);
   }
 
-  async logout(dto: LogoutDto): Promise<{ message: string }> {
-    const payload = await this.verifyRefreshToken(dto.refreshToken);
-    this.refreshTokens.delete(payload.jti);
+  async logout(input: {
+    refreshToken: string;
+    claims: RefreshTokenClaims;
+  }): Promise<{ message: string }> {
+    const storedToken = await this.refreshTokenModel.findUnique({
+      where: { jti: input.claims.jti },
+    });
+
+    if (!storedToken) {
+      return { message: 'Logged out successfully' };
+    }
+
+    const isTokenMatch = await bcrypt.compare(
+      input.refreshToken,
+      storedToken.refreshTokenHash,
+    );
+
+    if (!isTokenMatch) {
+      await this.revokeTokenFamily(input.claims.family);
+      throw new UnauthorizedException('Invalid refresh token');
+    }
+
+    await this.revokeTokenFamily(input.claims.family);
 
     return { message: 'Logged out successfully' };
   }
@@ -299,7 +394,7 @@ export class AuthService {
   private async issueTokenPair(
     user: AuthUserClaims,
     familyId: string,
-  ): Promise<AuthTokenPair> {
+  ): Promise<IssuedTokenPair> {
     const accessSecret = this.getRequiredSecret('JWT_ACCESS_SECRET');
     const refreshSecret = this.getRequiredSecret('JWT_REFRESH_SECRET');
     const jti = randomUUID();
@@ -333,43 +428,59 @@ export class AuthService {
       BCRYPT_SALT_ROUNDS,
     );
 
-    this.refreshTokens.set(jti, {
-      userId: user.id,
-      family: familyId,
-      refreshTokenHash,
-    });
-
     return {
       accessToken,
       refreshToken,
+      refreshTokenHash,
+      jti,
+      expiresAt: this.getRefreshTokenExpiresAt(),
+    };
+  }
+
+  private getRefreshTokenExpiresAt(): Date {
+    const expiresAt = new Date();
+    expiresAt.setDate(expiresAt.getDate() + 7);
+    return expiresAt;
+  }
+
+  private async persistRefreshToken(
+    userId: string,
+    tokenPair: IssuedTokenPair,
+    familyId: string,
+  ): Promise<void> {
+    await this.refreshTokenModel.create({
+      data: {
+        user: {
+          connect: {
+            id: userId,
+          },
+        },
+        jti: tokenPair.jti,
+        family: familyId,
+        refreshTokenHash: tokenPair.refreshTokenHash,
+        expiresAt: tokenPair.expiresAt,
+      },
+    });
+  }
+
+  private toAuthTokenPair(tokenPair: IssuedTokenPair): AuthTokenPair {
+    return {
+      accessToken: tokenPair.accessToken,
+      refreshToken: tokenPair.refreshToken,
       expiresIn: ACCESS_TOKEN_TTL_SECONDS,
     };
   }
 
-  private async verifyRefreshToken(
-    refreshToken: string,
-  ): Promise<{ sub: string; jti: string; family: string }> {
-    const refreshSecret = this.getRequiredSecret('JWT_REFRESH_SECRET');
-
-    try {
-      return await this.jwtService.verifyAsync<{
-        sub: string;
-        jti: string;
-        family: string;
-      }>(refreshToken, {
-        secret: refreshSecret,
-      });
-    } catch {
-      throw new UnauthorizedException('Invalid refresh token');
-    }
-  }
-
-  private revokeTokenFamily(familyId: string): void {
-    for (const [jti, token] of this.refreshTokens.entries()) {
-      if (token.family === familyId) {
-        this.refreshTokens.delete(jti);
-      }
-    }
+  private async revokeTokenFamily(familyId: string): Promise<void> {
+    await this.refreshTokenModel.updateMany({
+      where: {
+        family: familyId,
+        revokedAt: null,
+      },
+      data: {
+        revokedAt: new Date(),
+      },
+    });
   }
 
   private getRequiredSecret(

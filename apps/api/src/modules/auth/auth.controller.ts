@@ -1,11 +1,22 @@
-import { Body, Controller, Post, Req } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Post,
+  Req,
+  UseGuards,
+  type CanActivate,
+  type Type,
+} from '@nestjs/common';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
-import { AuthService } from './auth.service';
+import { AuthService, RefreshTokenClaims } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { RegisterDto } from './dto/register.dto';
+import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
+
+const JwtRefreshGuardType = JwtRefreshGuard as Type<CanActivate>;
 
 interface ApiEnvelope<T> {
   success: true;
@@ -39,20 +50,28 @@ export class AuthController {
   }
 
   @Post('refresh')
+  @UseGuards(JwtRefreshGuardType)
   async refresh(
     @Body() dto: RefreshDto,
     @Req() req: Request,
   ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['refresh']>>>> {
-    const data = await this.authService.refresh(dto);
+    const data = await this.authService.refresh({
+      refreshToken: dto.refreshToken,
+      claims: req.user as RefreshTokenClaims,
+    });
     return this.createSuccessEnvelope(req, data);
   }
 
   @Post('logout')
+  @UseGuards(JwtRefreshGuardType)
   async logout(
     @Body() dto: LogoutDto,
     @Req() req: Request,
   ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['logout']>>>> {
-    const data = await this.authService.logout(dto);
+    const data = await this.authService.logout({
+      refreshToken: dto.refreshToken,
+      claims: req.user as RefreshTokenClaims,
+    });
     return this.createSuccessEnvelope(req, data);
   }
 
