@@ -104,7 +104,8 @@ describe('AuthService', () => {
     prismaMock.user.findUnique.mockResolvedValue({
       id: 'usr-1',
       email: 'user@example.com',
-      passwordHash: '$2b$12$G1Ka4P9Qx5x3MewMQ7MxVudpOD9iZVjvXchV7YJHxF2ad2H9SpsHu',
+      passwordHash:
+        '$2b$12$G1Ka4P9Qx5x3MewMQ7MxVudpOD9iZVjvXchV7YJHxF2ad2H9SpsHu',
       displayName: 'John Doe',
       workspaces: [
         {
@@ -149,7 +150,9 @@ describe('AuthService', () => {
 
     expect(refreshResult.accessToken).toBeDefined();
     expect(refreshResult.refreshToken).toBeDefined();
-    expect(refreshResult.refreshToken).not.toBe(loginResult.tokens.refreshToken);
+    expect(refreshResult.refreshToken).not.toBe(
+      loginResult.tokens.refreshToken,
+    );
   });
 
   it('should revoke refresh token on logout', async () => {

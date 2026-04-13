@@ -171,7 +171,10 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const isValidPassword = await bcrypt.compare(dto.password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(
+      dto.password,
+      user.passwordHash,
+    );
     if (!isValidPassword) {
       throw new UnauthorizedException('Invalid credentials');
     }
@@ -263,7 +266,9 @@ export class AuthService {
     return { message: 'Logged out successfully' };
   }
 
-  private async createUniqueWorkspaceSlug(workspaceName: string): Promise<string> {
+  private async createUniqueWorkspaceSlug(
+    workspaceName: string,
+  ): Promise<string> {
     const baseSlug = this.slugify(workspaceName);
 
     const existingCount = await this.prisma.workspace.count({
@@ -323,7 +328,10 @@ export class AuthService {
       },
     );
 
-    const refreshTokenHash = await bcrypt.hash(refreshToken, BCRYPT_SALT_ROUNDS);
+    const refreshTokenHash = await bcrypt.hash(
+      refreshToken,
+      BCRYPT_SALT_ROUNDS,
+    );
 
     this.refreshTokens.set(jti, {
       userId: user.id,
@@ -364,7 +372,9 @@ export class AuthService {
     }
   }
 
-  private getRequiredSecret(envKey: 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET'): string {
+  private getRequiredSecret(
+    envKey: 'JWT_ACCESS_SECRET' | 'JWT_REFRESH_SECRET',
+  ): string {
     const secret = process.env[envKey];
 
     if (!secret || secret.length < 64) {
