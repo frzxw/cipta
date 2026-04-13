@@ -4,9 +4,9 @@
     "module": "nodenext",
     "moduleResolution": "nodenext",
     "outDir": "./dist",
-    "baseUrl": "./",
+    "types": ["node", "jest"],
     "removeComments": true,
     "resolvePackageJsonExports": true,
-    "ignoreDeprecations": "6.0"
+    "ignoreDeprecations": "5.0"
   }
 }
