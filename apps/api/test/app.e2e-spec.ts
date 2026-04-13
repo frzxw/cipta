@@ -7,6 +7,11 @@ import { AppModule } from './../src/app.module';
 describe('AppController (e2e)', () => {
   let app: INestApplication<App>;
 
+  beforeAll(() => {
+    process.env.JWT_ACCESS_SECRET = 'a'.repeat(64);
+    process.env.JWT_REFRESH_SECRET = 'b'.repeat(64);
+  });
+
   beforeEach(async () => {
     const moduleFixture: TestingModule = await Test.createTestingModule({
       imports: [AppModule],
@@ -16,10 +21,7 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET)', () => {
-    return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+  it('/ (GET) should require authentication', () => {
+    return request(app.getHttpServer()).get('/').expect(401);
   });
 });
