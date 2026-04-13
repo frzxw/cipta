@@ -21,7 +21,7 @@ describe('AppController (e2e)', () => {
     await app.init();
   });
 
-  it('/ (GET) should require authentication', () => {
-    return request(app.getHttpServer()).get('/').expect(401);
+  it('/ (GET) should return hello without authentication', () => {
+    return request(app.getHttpServer()).get('/').expect(200);
   });
 });

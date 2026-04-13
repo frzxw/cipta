@@ -5,7 +5,7 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
-import { type Prisma, WorkspaceRole } from '@cipta/database';
+import { WorkspaceRole } from '@cipta/database';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import { PrismaService } from '../../prisma/prisma.service';
@@ -14,6 +14,7 @@ import { RegisterDto } from './dto/register.dto';
 
 const ACCESS_TOKEN_TTL_SECONDS = 15 * 60;
 const REFRESH_TOKEN_TTL = '7d';
+const REFRESH_TOKEN_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const ACCESS_TOKEN_TTL = '15m';
 const BCRYPT_SALT_ROUNDS = 12;
 
@@ -34,30 +35,6 @@ interface IssuedTokenPair {
   refreshTokenHash: string;
   jti: string;
   expiresAt: Date;
-}
-
-type RefreshTokenModelDelegate = {
-  findUnique(args: {
-    where: Prisma.RefreshTokenWhereUniqueInput;
-  }): Promise<StoredRefreshToken | null>;
-  create(args: {
-    data: Prisma.RefreshTokenCreateInput;
-  }): Promise<StoredRefreshToken>;
-  updateMany(args: {
-    where: Prisma.RefreshTokenWhereInput;
-    data: Prisma.RefreshTokenUpdateManyMutationInput;
-  }): Promise<Prisma.BatchPayload>;
-};
-
-interface StoredRefreshToken {
-  id: string;
-  userId: string;
-  jti: string;
-  family: string;
-  refreshTokenHash: string;
-  expiresAt: Date;
-  usedAt: Date | null;
-  revokedAt: Date | null;
 }
 
 export interface RefreshTokenClaims {
@@ -99,12 +76,6 @@ export interface LoginResponse {
 
 @Injectable()
 export class AuthService {
-  private get refreshTokenModel(): RefreshTokenModelDelegate {
-    return (
-      this.prisma as unknown as { refreshToken: RefreshTokenModelDelegate }
-    ).refreshToken;
-  }
-
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwtService: JwtService,
@@ -247,7 +218,7 @@ export class AuthService {
     refreshToken: string;
     claims: RefreshTokenClaims;
   }): Promise<AuthTokenPair> {
-    const storedToken = await this.refreshTokenModel.findUnique({
+    const storedToken = await this.prisma.refreshToken.findUnique({
       where: { jti: input.claims.jti },
     });
 
@@ -258,7 +229,7 @@ export class AuthService {
       storedToken.family !== input.claims.family ||
       storedToken.userId !== input.claims.sub
     ) {
-      await this.revokeTokenFamily(input.claims.family);
+      await this.revokeTokenFamilies(storedToken?.family ?? null, input.claims.family);
       throw new UnauthorizedException('Refresh token invalid or already used');
     }
 
@@ -312,7 +283,7 @@ export class AuthService {
     );
 
     const now = new Date();
-    const rotatedCount = await this.refreshTokenModel.updateMany({
+    const rotatedCount = await this.prisma.refreshToken.updateMany({
       where: {
         id: storedToken.id,
         usedAt: null,
@@ -338,7 +309,7 @@ export class AuthService {
     refreshToken: string;
     claims: RefreshTokenClaims;
   }): Promise<{ message: string }> {
-    const storedToken = await this.refreshTokenModel.findUnique({
+    const storedToken = await this.prisma.refreshToken.findUnique({
       where: { jti: input.claims.jti },
     });
 
@@ -352,11 +323,11 @@ export class AuthService {
     );
 
     if (!isTokenMatch) {
-      await this.revokeTokenFamily(input.claims.family);
+      await this.revokeTokenFamilies(storedToken.family, input.claims.family);
       throw new UnauthorizedException('Invalid refresh token');
     }
 
-    await this.revokeTokenFamily(input.claims.family);
+    await this.revokeTokenFamilies(storedToken.family, input.claims.family);
 
     return { message: 'Logged out successfully' };
   }
@@ -438,9 +409,7 @@ export class AuthService {
   }
 
   private getRefreshTokenExpiresAt(): Date {
-    const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
-    return expiresAt;
+    return new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
   }
 
   private async persistRefreshToken(
@@ -448,7 +417,7 @@ export class AuthService {
     tokenPair: IssuedTokenPair,
     familyId: string,
   ): Promise<void> {
-    await this.refreshTokenModel.create({
+    await this.prisma.refreshToken.create({
       data: {
         user: {
           connect: {
@@ -472,7 +441,7 @@ export class AuthService {
   }
 
   private async revokeTokenFamily(familyId: string): Promise<void> {
-    await this.refreshTokenModel.updateMany({
+    await this.prisma.refreshToken.updateMany({
       where: {
         family: familyId,
         revokedAt: null,
@@ -481,6 +450,20 @@ export class AuthService {
         revokedAt: new Date(),
       },
     });
+  }
+
+  private async revokeTokenFamilies(
+    storedFamily: string | null,
+    claimsFamily: string,
+  ): Promise<void> {
+    if (storedFamily) {
+      await this.revokeTokenFamily(storedFamily);
+      if (storedFamily !== claimsFamily) {
+        await this.revokeTokenFamily(claimsFamily);
+      }
+    } else {
+      await this.revokeTokenFamily(claimsFamily);
+    }
   }
 
   private getRequiredSecret(
