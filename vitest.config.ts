@@ -9,6 +9,7 @@ export default defineConfig({
       '**/node_modules/**',
       '**/dist/**',
       '**/.next/**',
+      'e2e/**/*.ts',
       'apps/api/src/**/*.spec.ts',
       'apps/api/test/**/*.ts',
     ],

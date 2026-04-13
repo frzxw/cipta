@@ -32,6 +32,7 @@ export type {
   DistributionRule,
   Distribution,
   Job,
+  RefreshToken,
 } from './generated/client';
 
 // ─────────────────────────────────────

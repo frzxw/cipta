@@ -222,7 +222,7 @@ Rotate tokens using a valid refresh token.
 
 ### POST `/auth/logout`
 
-Invalidate the current refresh token.
+Invalidate the refresh token family for the provided refresh token.
 
 **Request:**
 
