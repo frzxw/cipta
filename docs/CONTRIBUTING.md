@@ -34,6 +34,7 @@ docker compose up -d
 # Set up environment variables
 cp apps/api/.env.example apps/api/.env
 cp apps/worker/.env.example apps/worker/.env
+cp apps/web/.env.example apps/web/.env
 
 # Run database migrations
 pnpm --filter @cipta/database exec prisma migrate dev
@@ -105,7 +106,7 @@ pnpm --filter api test:e2e         # Run API E2E tests
 
 Follow [Conventional Commits](https://www.conventionalcommits.org/) strictly:
 
-```
+```text
 <type>(<scope>): <description>
 
 [optional body]
@@ -130,7 +131,7 @@ Follow [Conventional Commits](https://www.conventionalcommits.org/) strictly:
 
 **Examples:**
 
-```
+```text
 feat(api): add ingestor module with source CRUD endpoints
 fix(worker): handle FFmpeg timeout on large files
 docs(specs): add Guardian module specification
