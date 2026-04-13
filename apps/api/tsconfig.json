@@ -7,6 +7,6 @@
     "baseUrl": "./",
     "removeComments": true,
     "resolvePackageJsonExports": true,
-    "ignoreDeprecations": "5.0"
+    "ignoreDeprecations": "6.0"
   }
 }
