@@ -229,7 +229,10 @@ export class AuthService {
       storedToken.family !== input.claims.family ||
       storedToken.userId !== input.claims.sub
     ) {
-      await this.revokeTokenFamilies(storedToken?.family ?? null, input.claims.family);
+      await this.revokeTokenFamilies(
+        storedToken?.family ?? null,
+        input.claims.family,
+      );
       throw new UnauthorizedException('Refresh token invalid or already used');
     }
 
