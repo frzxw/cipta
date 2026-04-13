@@ -1,6 +1,9 @@
 {
-  "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-  "*.{js,jsx,mjs,cjs}": ["eslint --fix", "prettier --write"],
+  "apps/api/**/*.{ts,tsx}": ["pnpm --filter api lint", "prettier --write"],
+  "apps/web/**/*.{ts,tsx,js,jsx,mjs,cjs}": ["pnpm --filter web lint", "prettier --write"],
+  "apps/docs/**/*.{ts,tsx,js,jsx,mjs,cjs}": ["pnpm --filter docs lint", "prettier --write"],
+  "packages/ui/**/*.{ts,tsx,js,jsx,mjs,cjs}": ["pnpm --filter @cipta/ui lint", "prettier --write"],
+  "*.{ts,tsx,js,jsx,mjs,cjs}": ["prettier --write"],
   "*.{json,yaml,yml}": ["prettier --write"],
   "*.md": ["markdownlint --fix --ignore .agents/**", "prettier --write"]
 }
