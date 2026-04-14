@@ -5,12 +5,7 @@ import {
 } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
-import { WorkspaceRole } from '@cipta/database';
-
-interface JwtWorkspaceClaim {
-  id: string;
-  role: WorkspaceRole;
-}
+import { JwtWorkspaceClaim } from '../workspace-scope.util';
 
 interface JwtAccessPayload {
   sub: string;

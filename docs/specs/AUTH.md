@@ -17,7 +17,7 @@ Cipta uses **JWT-based authentication** with access/refresh token rotation. Auth
 
 ### 2.1 Registration
 
-```
+```text
 Client                        API                          Database
   │                            │                              │
   │ POST /auth/register        │                              │
@@ -37,7 +37,7 @@ Client                        API                          Database
 
 ### 2.2 Login
 
-```
+```text
 Client                        API                          Database
   │                            │                              │
   │ POST /auth/login           │                              │
@@ -54,7 +54,7 @@ Client                        API                          Database
 
 ### 2.3 Token Refresh
 
-```
+```text
 Client                        API                          Database
   │                            │                              │
   │ POST /auth/refresh         │                              │
@@ -253,10 +253,10 @@ Every request to a resource endpoint must be scoped to a workspace:
 ### 6.1 Workspace Resolution
 
 ```typescript
-// apps/api/src/common/decorators/workspace.decorator.ts
+// apps/api/src/modules/auth/decorators/workspace-scope.decorator.ts
 
-export const CurrentWorkspace = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): string => {
+export const WorkspaceScope = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): WorkspaceScopeContext => {
     const request = ctx.switchToHttp().getRequest();
 
     // Priority: Header > Default workspace
@@ -277,14 +277,17 @@ export const CurrentWorkspace = createParamDecorator(
       throw new ForbiddenException('Not a member of this workspace');
     }
 
-    return workspaceId;
+    return {
+      workspaceId,
+      role: membership.role,
+    };
   },
 );
 
 // Usage in controllers:
 @Get()
-async findAll(@CurrentWorkspace() workspaceId: string) {
-  return this.sourceService.findAll(workspaceId);
+async findAll(@WorkspaceScope() scope: WorkspaceScopeContext) {
+  return this.sourceService.findAll(scope.workspaceId);
 }
 ```
 
@@ -387,13 +390,13 @@ model RefreshToken {
 
 ### 10.1 Unit Tests
 
-| Test                            | File                          |
-| ------------------------------- | ----------------------------- |
-| Password hashing and comparison | `auth.service.spec.ts`        |
-| JWT generation and verification | `auth.service.spec.ts`        |
-| Token family rotation detection | `auth.service.spec.ts`        |
-| Role guard logic                | `roles.guard.spec.ts`         |
-| Workspace resolution decorator  | `workspace.decorator.spec.ts` |
+| Test                            | File                           |
+| ------------------------------- | ------------------------------ |
+| Password hashing and comparison | `auth.service.spec.ts`         |
+| JWT generation and verification | `auth.service.spec.ts`         |
+| Token family rotation detection | `auth.service.spec.ts`         |
+| Role guard logic                | `roles.guard.spec.ts`          |
+| Workspace resolution utility    | `workspace-scope.util.spec.ts` |
 
 ### 10.2 Integration Tests
 
