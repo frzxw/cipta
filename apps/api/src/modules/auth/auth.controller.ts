@@ -9,8 +9,11 @@ import {
   type Type,
 } from '@nestjs/common';
 import { Throttle } from '@nestjs/throttler';
-import { randomUUID } from 'crypto';
 import type { Request } from 'express';
+import {
+  ApiSuccessEnvelope,
+  createSuccessEnvelope,
+} from '../../common/http/response-envelope';
 import { AuthService, RefreshTokenClaims } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { LogoutDto } from './dto/logout.dto';
@@ -20,17 +23,22 @@ import { JwtRefreshGuard } from './guards/jwt-refresh.guard';
 
 const JwtRefreshGuardType = JwtRefreshGuard as Type<CanActivate>;
 
-interface ApiEnvelope<T> {
-  success: true;
-  data: T;
-  meta: {
-    timestamp: string;
-    requestId: string;
-  };
-}
+function isRefreshTokenClaims(value: unknown): value is RefreshTokenClaims {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
 
-interface RefreshClaimsRequest extends Request {
-  user?: RefreshTokenClaims;
+  const claims = value as {
+    sub?: unknown;
+    jti?: unknown;
+    family?: unknown;
+  };
+
+  return (
+    typeof claims.sub === 'string' &&
+    typeof claims.jti === 'string' &&
+    typeof claims.family === 'string'
+  );
 }
 
 @Controller('auth')
@@ -45,9 +53,9 @@ export class AuthController {
   async register(
     @Body() dto: RegisterDto,
     @Req() req: Request,
-  ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['register']>>>> {
+  ): Promise<ApiSuccessEnvelope<Awaited<ReturnType<AuthService['register']>>>> {
     const data = await this.authService.register(dto);
-    return this.createSuccessEnvelope(req, data);
+    return createSuccessEnvelope(req, data);
   }
 
   @Post('login')
@@ -58,9 +66,9 @@ export class AuthController {
   async login(
     @Body() dto: LoginDto,
     @Req() req: Request,
-  ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['login']>>>> {
+  ): Promise<ApiSuccessEnvelope<Awaited<ReturnType<AuthService['login']>>>> {
     const data = await this.authService.login(dto);
-    return this.createSuccessEnvelope(req, data);
+    return createSuccessEnvelope(req, data);
   }
 
   @Post('refresh')
@@ -71,13 +79,13 @@ export class AuthController {
   })
   async refresh(
     @Body() dto: RefreshDto,
-    @Req() req: RefreshClaimsRequest,
-  ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['refresh']>>>> {
+    @Req() req: Request,
+  ): Promise<ApiSuccessEnvelope<Awaited<ReturnType<AuthService['refresh']>>>> {
     const data = await this.authService.refresh({
       refreshToken: dto.refreshToken,
       claims: this.getRefreshClaims(req),
     });
-    return this.createSuccessEnvelope(req, data);
+    return createSuccessEnvelope(req, data);
   }
 
   @Post('logout')
@@ -88,41 +96,19 @@ export class AuthController {
   })
   async logout(
     @Body() dto: LogoutDto,
-    @Req() req: RefreshClaimsRequest,
-  ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['logout']>>>> {
+    @Req() req: Request,
+  ): Promise<ApiSuccessEnvelope<Awaited<ReturnType<AuthService['logout']>>>> {
     const data = await this.authService.logout({
       refreshToken: dto.refreshToken,
       claims: this.getRefreshClaims(req),
     });
-    return this.createSuccessEnvelope(req, data);
+    return createSuccessEnvelope(req, data);
   }
 
-  private createSuccessEnvelope<T>(req: Request, data: T): ApiEnvelope<T> {
-    const requestIdHeader = req.headers['x-request-id'];
-    const requestId =
-      typeof requestIdHeader === 'string' && requestIdHeader.length > 0
-        ? requestIdHeader
-        : randomUUID();
+  private getRefreshClaims(req: Request): RefreshTokenClaims {
+    const claims = (req as unknown as { user?: unknown }).user;
 
-    return {
-      success: true,
-      data,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId,
-      },
-    };
-  }
-
-  private getRefreshClaims(req: RefreshClaimsRequest): RefreshTokenClaims {
-    const claims = req.user;
-
-    if (
-      !claims ||
-      typeof claims.sub !== 'string' ||
-      typeof claims.jti !== 'string' ||
-      typeof claims.family !== 'string'
-    ) {
+    if (!isRefreshTokenClaims(claims)) {
       throw new UnauthorizedException('Invalid refresh token payload');
     }
 

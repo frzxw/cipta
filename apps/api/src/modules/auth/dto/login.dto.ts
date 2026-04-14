@@ -1,21 +1,9 @@
 import { Transform } from 'class-transformer';
 import { IsEmail, IsString, MaxLength, MinLength } from 'class-validator';
-
-const normalizeEmail = ({ value }: { value: unknown }): unknown => {
-  if (typeof value === 'string') {
-    return value.trim().toLowerCase();
-  }
-
-  return value;
-};
-
-const normalizeTrimmedString = ({ value }: { value: unknown }): unknown => {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-
-  return value;
-};
+import {
+  normalizeEmail,
+  normalizeTrimmedString,
+} from '../../../common/validation/normalizers';
 
 export class LoginDto {
   @Transform(normalizeEmail)
