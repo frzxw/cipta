@@ -98,6 +98,9 @@ These instructions are normative. Agent MUST follow them on every task in this w
 ## 5) Architecture and Boundary Rules
 
 - Keep changes scoped to affected app/package unless user asks for cross-package refactor.
+- For API app structure: keep domain/business logic in `apps/api/src/modules/**`; place only cross-cutting reusable concerns in `apps/api/src/common/**`.
+- Examples for `apps/api/src/common/**`: response envelope helpers, DTO input normalizers, global guards/interceptors/filters/pipes used by multiple modules.
+- Baseline cross-cutting candidates for `apps/api/src/common/**` during module growth: logging helpers, error-handling helpers, pagination helpers, request-context helpers, and response-envelope utilities.
 - Respect shared config packages before local overrides:
   - `packages/eslint-config`
   - `packages/typescript-config`

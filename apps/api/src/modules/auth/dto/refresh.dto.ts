@@ -1,13 +1,6 @@
 import { Transform } from 'class-transformer';
 import { IsString, MinLength } from 'class-validator';
-
-const normalizeTrimmedString = ({ value }: { value: unknown }): unknown => {
-  if (typeof value === 'string') {
-    return value.trim();
-  }
-
-  return value;
-};
+import { normalizeTrimmedString } from '../../../common/validation/normalizers';
 
 export class RefreshDto {
   @Transform(normalizeTrimmedString)
