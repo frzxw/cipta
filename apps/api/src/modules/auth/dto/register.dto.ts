@@ -1,3 +1,4 @@
+import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsString,
@@ -6,10 +7,28 @@ import {
   MinLength,
 } from 'class-validator';
 
+const normalizeEmail = ({ value }: { value: unknown }): unknown => {
+  if (typeof value === 'string') {
+    return value.trim().toLowerCase();
+  }
+
+  return value;
+};
+
+const normalizeTrimmedString = ({ value }: { value: unknown }): unknown => {
+  if (typeof value === 'string') {
+    return value.trim();
+  }
+
+  return value;
+};
+
 export class RegisterDto {
+  @Transform(normalizeEmail)
   @IsEmail()
   email!: string;
 
+  @Transform(normalizeTrimmedString)
   @IsString()
   @MinLength(8)
   @MaxLength(128)
@@ -22,6 +41,7 @@ export class RegisterDto {
   })
   password!: string;
 
+  @Transform(normalizeTrimmedString)
   @IsString()
   @MinLength(2)
   @MaxLength(50)

@@ -3,10 +3,12 @@ import {
   Controller,
   Post,
   Req,
+  UnauthorizedException,
   UseGuards,
   type CanActivate,
   type Type,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { randomUUID } from 'crypto';
 import type { Request } from 'express';
 import { AuthService, RefreshTokenClaims } from './auth.service';
@@ -27,11 +29,19 @@ interface ApiEnvelope<T> {
   };
 }
 
+interface RefreshClaimsRequest extends Request {
+  user?: RefreshTokenClaims;
+}
+
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Throttle({
+    short: { limit: 1, ttl: 1000 },
+    medium: { limit: 5, ttl: 60000 },
+  })
   async register(
     @Body() dto: RegisterDto,
     @Req() req: Request,
@@ -41,6 +51,10 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({
+    short: { limit: 1, ttl: 1000 },
+    medium: { limit: 10, ttl: 60000 },
+  })
   async login(
     @Body() dto: LoginDto,
     @Req() req: Request,
@@ -51,26 +65,34 @@ export class AuthController {
 
   @Post('refresh')
   @UseGuards(JwtRefreshGuardType)
+  @Throttle({
+    short: { limit: 2, ttl: 1000 },
+    medium: { limit: 20, ttl: 60000 },
+  })
   async refresh(
     @Body() dto: RefreshDto,
-    @Req() req: Request,
+    @Req() req: RefreshClaimsRequest,
   ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['refresh']>>>> {
     const data = await this.authService.refresh({
       refreshToken: dto.refreshToken,
-      claims: req.user as RefreshTokenClaims,
+      claims: this.getRefreshClaims(req),
     });
     return this.createSuccessEnvelope(req, data);
   }
 
   @Post('logout')
   @UseGuards(JwtRefreshGuardType)
+  @Throttle({
+    short: { limit: 2, ttl: 1000 },
+    medium: { limit: 20, ttl: 60000 },
+  })
   async logout(
     @Body() dto: LogoutDto,
-    @Req() req: Request,
+    @Req() req: RefreshClaimsRequest,
   ): Promise<ApiEnvelope<Awaited<ReturnType<AuthService['logout']>>>> {
     const data = await this.authService.logout({
       refreshToken: dto.refreshToken,
-      claims: req.user as RefreshTokenClaims,
+      claims: this.getRefreshClaims(req),
     });
     return this.createSuccessEnvelope(req, data);
   }
@@ -90,5 +112,20 @@ export class AuthController {
         requestId,
       },
     };
+  }
+
+  private getRefreshClaims(req: RefreshClaimsRequest): RefreshTokenClaims {
+    const claims = req.user;
+
+    if (
+      !claims ||
+      typeof claims.sub !== 'string' ||
+      typeof claims.jti !== 'string' ||
+      typeof claims.family !== 'string'
+    ) {
+      throw new UnauthorizedException('Invalid refresh token payload');
+    }
+
+    return claims;
   }
 }
