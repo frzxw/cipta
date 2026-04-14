@@ -36,6 +36,7 @@ These instructions are normative. Agent MUST follow them on every task in this w
 ## 2.2) Context Engineering by Task Type
 
 - API/NestJS changes MUST load: `api-contracts.md`, `monorepo-architecture.md`, relevant module spec, `docs/API.md`, `docs/ARCHITECTURE.md`, `docs/TESTING.md`.
+- API/NestJS changes that add or modify endpoints MUST ensure Swagger/OpenAPI is available and updated (`/v1/docs`, `/v1/docs-json`) via `@nestjs/swagger` setup.
 - Database/Prisma changes MUST load: `database-schema.md`, `docs/ERD.md`, `docs/CONFIG.md`, related migrations/schema files.
 - Frontend/Next.js changes MUST load: `frontend-conventions.md`, `docs/DESIGN.md`, `docs/API.md`, relevant module spec.
 - Security-sensitive changes MUST load: `security-standards.md` and `docs/SECURITY.md` first.
@@ -150,6 +151,7 @@ These instructions are normative. Agent MUST follow them on every task in this w
 
 - Behavior/API/schema changes MUST trigger doc impact check.
 - Agent MUST update docs when implementation changes documented behavior.
+- API contract changes MUST update OpenAPI exposure in bootstrap and document Swagger access points in `docs/API.md`.
 - At minimum, evaluate impact on:
   - `docs/API.md`
   - `docs/ERD.md`
