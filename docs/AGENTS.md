@@ -53,6 +53,9 @@ These rules apply to all work under `docs/`.
 - Update cross-references when moving or renaming sections.
 - Use links to canonical docs instead of duplicating large content.
 - Keep examples consistent with actual workspace commands (pnpm + turbo).
+- For API code organization: keep domain/module-specific code inside `apps/api/src/modules/**`; use `apps/api/src/common/**` only for cross-cutting reusable concerns.
+- `apps/api/src/common/**` examples: response envelope builders, DTO transform/normalizer helpers, global guards/interceptors/filters/pipes reused across modules.
+- Baseline `apps/api/src/common/**` candidates that should be prepared and reused as modules grow: logging utilities, error-handling utilities, pagination helpers, request-context utilities, and response-envelope helpers.
 
 ## 4.1) Documentation Engineering Protocol
 
