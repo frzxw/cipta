@@ -43,6 +43,7 @@ These rules apply to all work under `docs/`.
 - Keep terminology aligned with project vocabulary from `.agents/rules/core-conventions.md`.
 - Keep architecture claims aligned with `docs/ARCHITECTURE.md`.
 - Keep API claims aligned with `docs/API.md`.
+- Keep OpenAPI/Swagger access details aligned with runtime bootstrap (`/v1/docs`, `/v1/docs-json`).
 - Keep schema claims aligned with `docs/ERD.md` and Prisma schema.
 
 ## 4) Editing Rules
@@ -66,6 +67,7 @@ These rules apply to all work under `docs/`.
 - After editing one docs file, check whether related docs need updates.
 - Required sync checks:
   - API changes -> `docs/API.md`, related module spec.
+  - API endpoint or auth changes -> verify Swagger/OpenAPI configuration and endpoint docs are still accurate.
   - Schema changes -> `docs/ERD.md`, `docs/CONFIG.md`, module specs.
   - Architecture changes -> `docs/ARCHITECTURE.md`, impacted specs, runbooks.
   - Operational changes -> relevant runbook files.

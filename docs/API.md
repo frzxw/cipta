@@ -80,7 +80,7 @@ All API responses follow a consistent envelope format:
 
 All endpoints (except `/auth/*`) require a valid JWT in the `Authorization` header:
 
-```
+```http
 Authorization: Bearer <access_token>
 ```
 
@@ -99,11 +99,22 @@ Paginated endpoints accept:
 
 All resource endpoints are scoped to the user's active workspace via the `X-Workspace-Id` header:
 
-```
+```http
 X-Workspace-Id: ws_abc123
 ```
 
 If omitted, the user's default workspace is used.
+
+### 1.6 OpenAPI Documentation
+
+Swagger/OpenAPI docs are available for API inspection and testing:
+
+| Endpoint            | Description            |
+| ------------------- | ---------------------- |
+| `GET /v1/docs`      | Interactive Swagger UI |
+| `GET /v1/docs-json` | OpenAPI JSON document  |
+
+Swagger includes bearer JWT authentication scheme so protected endpoints can be tested from the UI.
 
 ---
 
@@ -808,7 +819,7 @@ Remove a member from the workspace.
 
 Rate limit headers are included in all responses:
 
-```
+```http
 X-RateLimit-Limit: 100
 X-RateLimit-Remaining: 95
 X-RateLimit-Reset: 1712822460
