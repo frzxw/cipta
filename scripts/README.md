@@ -20,14 +20,17 @@ AI reads only the summary, not full tool output.
 ## branch.sh
 
 ```bash
-bash scripts/branch.sh <issue-number> [type] [description]
+bash scripts/branch.sh <issue-number> ["title"]
 ```
+
+Format: `{N}-{slug}` — fetches title from GitHub if not provided.
+Slugify: lowercase · spaces→hyphens · all other special chars removed (`/` `.` `+` stripped).
 
 **Output contract:** exactly 2 lines:
 
 ```text
-branch: feat/issue-42-<slug>
-keyword: Closes #42
+branch: 65-add-swagger-openapi-docs-for-api
+keyword: Closes #65
 ```
 
 Copy the keyword into both commit footer and PR body for GitHub auto-close.
@@ -49,6 +52,6 @@ bash scripts/spec.sh API "/sources"       # endpoint block
 # ❌ Never write these:
 pnpm lint && pnpm check-types && pnpm test
 pnpm --filter @cipta/database exec prisma generate   # → verify.sh prisma
-git checkout -b feat/...                             # → branch.sh
+git checkout -b 42-...                               # → branch.sh
 cat docs/specs/AUTH.md                               # → spec.sh
 ```

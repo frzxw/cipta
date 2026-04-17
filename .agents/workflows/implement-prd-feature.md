@@ -54,7 +54,8 @@ Tests: <files> → <AC-ids covered>
 ### 3. Branch
 
 ```bash
-bash scripts/branch.sh <issue_number> feat f-<id>-<name>
+bash scripts/branch.sh <issue_number>
+# → branch: <N>-f-<id>-<name>  (title fetched from GitHub issue)
 ```
 
 ### 4. Execute (use Scaffold workflows per layer)

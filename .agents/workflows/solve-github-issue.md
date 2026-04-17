@@ -54,11 +54,11 @@ AC: <AC-xxx.x>
 ### 4. Branch
 
 ```bash
-bash scripts/branch.sh <N> <type>
-# → prints: branch: <name>  |  keyword: Closes #N
+bash scripts/branch.sh <N>
+# → prints: branch: <N>-<slugified-title>  |  keyword: Closes #N
 ```
 
-> GitLens branch: if user already made one, check it out. Still require `Closes #N` in PR body.
+> GitLens branch: if user already created one, check it out. Still require `Closes #N` in PR body.
 
 ### 5. Implement (follow `.agents/rules/` — do not re-read unless a specific rule is needed)
 
