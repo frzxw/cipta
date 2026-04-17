@@ -95,11 +95,11 @@ Create `apps/worker/src/services/{name}.service.spec.ts`:
 - Mock the `WorkerContext` (prisma, storage, logger, config).
 - Test the main processing logic, progress reporting, and error handling.
 
-### 7. Verify build
+### 7. Verify
 
 // turbo
 ```
-pnpm --filter worker build
+bash scripts/verify.sh build
 ```
 
 ## Expected Output

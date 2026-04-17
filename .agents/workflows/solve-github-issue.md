@@ -1,139 +1,80 @@
 ---
 name: Solve GitHub Issue
 description: >
-  Read a GitHub issue, analyze it against the PRD and specs, plan the implementation,
-  write the code, run tests, and prepare a PR. Use when the user says "solve issue #X",
-  "pick up this issue", "implement this ticket", "fix this bug from GitHub", or
-  pastes a GitHub issue URL.
+  Read a GitHub issue → plan → implement → test → PR. Triggers: "solve issue #X",
+  "pick up this issue", "implement this ticket", "fix this bug".
 ---
 
 # Solve GitHub Issue
 
-End-to-end workflow: read a GitHub issue → plan → implement → test → prepare PR.
+## Context loading (scoped — load only what the issue references)
 
-## Trigger
+```bash
+# 1. Read issue (fields only — no extra comments)
+gh issue view <N> --json title,body,labels --jq '{title,labels:[.labels[].name],body}' | head -60
 
-User provides a GitHub issue number, URL, or pastes issue content.
+# 2. Read TOC of relevant spec (choose ONE based on issue topic)
+bash scripts/spec.sh <doc>              # prints headers only
 
-## Required Input
+# 3. Read specific section once you know which one
+bash scripts/spec.sh <doc> "<section>" # ≤60 lines
+```
 
-- **Issue number or URL** (e.g., `#42` or `https://github.com/org/cipta/issues/42`)
-- OR **issue content** pasted directly
+| Issue topic | Doc |
+|-------------|-----|
+| F-001–F-009 | `PRD` |
+| Source/ingest/download/transcribe | `specs/INGESTOR` |
+| render/caption/FFmpeg | `specs/FACTORY` |
+| variation/fingerprint | `specs/GUARDIAN` |
+| account/cluster/publish | `specs/FLEET` |
+| queue/BullMQ/job | `specs/WORKER` |
+| JWT/login/auth/roles | `specs/AUTH` |
+| REST/DTO/error codes | `API` |
+| schema/model/field | `ERD` |
+| UI/page/dashboard | `DESIGN` |
+
+**Stop after reading the one relevant section. Do not load all docs.**
 
 ## Steps
 
-### 1. Read and understand the issue
+### 1. Parse issue → extract: title, label, spec refs, AC checkboxes
 
-Parse the issue for:
-- **Title** — what is being requested or reported
-- **Labels** — `bug`, `feat`, `enhancement`, `refactor`, etc.
-- **Spec references** — any mentions of `F-001`, `AC-003.2`, spec file names
-- **Acceptance criteria** — any checkboxes or expected behavior
+### 2. Scoped spec read (1 section max per doc)
 
-### 2. Map to project documentation
-
-Cross-reference the issue with the docs:
-
-| Issue mentions... | Read this doc |
-|-------------------|---------------|
-| A feature ID (F-001 through F-009) | `docs/PRD.md §4` for acceptance criteria |
-| Ingestor, Source, download, transcribe | `docs/specs/INGESTOR.md` |
-| Factory, render, caption, FFmpeg | `docs/specs/FACTORY.md` |
-| Guardian, variation, fingerprint, anti-shadowban | `docs/specs/GUARDIAN.md` |
-| Fleet, account, cluster, publish, distribute | `docs/specs/FLEET.md` |
-| Worker, queue, BullMQ, job | `docs/specs/WORKER.md` |
-| Auth, JWT, login, roles, workspace | `docs/specs/AUTH.md` |
-| API endpoint, REST, DTO, error code | `docs/API.md` |
-| Database, schema, model, field | `docs/ERD.md` |
-| UI, page, dashboard, component | `docs/DESIGN.md` |
-| Security, encryption, credentials | `docs/SECURITY.md` |
-
-### 3. Create a plan
-
-Before writing any code, produce a short implementation plan:
+### 3. Plan (present to user, wait for approval)
 
 ```
-## Plan for #{issue_number}: {title}
-
-### Changes needed:
-1. {file_path} — {what to change and why}
-2. {file_path} — ...
-
-### New files:
-- {file_path} — {purpose}
-
-### Tests:
-- {test_file} — {what to test}
-
-### Spec reference:
-- {spec_file} §{section}
-- Acceptance criteria: {AC-xxx.x}
+## Plan #<N>: <title>
+Changes: <file> — <reason> (one line each)
+New files: <file> — <purpose>
+Tests: <file> — <what>
+AC: <AC-xxx.x>
 ```
 
-Present this plan to the user and wait for approval before proceeding.
+### 4. Branch
 
-### 4. Create a feature branch
-
+```bash
+bash scripts/branch.sh <N> <type>
+# → prints: branch: <name>  |  keyword: Closes #N
 ```
-git checkout -b {type}/issue-{number}-{short-description} develop
-```
 
-Where `{type}` is `feat`, `fix`, `refactor`, `docs`, etc. based on the issue label.
+> GitLens branch: if user already made one, check it out. Still require `Closes #N` in PR body.
 
-### 5. Implement the changes
+### 5. Implement (follow `.agents/rules/` — do not re-read unless a specific rule is needed)
 
-Write the code following all project rules (loaded from `.agents/rules/`):
-- Workspace scoping on all DB queries
-- Proper DTOs and validation
-- Zero NestJS imports in Worker code
-- Proper error handling and status transitions
-- Follow file naming conventions
-
-### 6. Write tests
-
-- **Unit tests** for every new service method (mock dependencies)
-- **Integration tests** if the issue involves API endpoints (Supertest)
-- Trace to acceptance criteria: `it('[AC-xxx.x] should ...')`
+### 6. Test (unit + integration per `.agents/rules/testing-standards.md §coverage`)
 
 ### 7. Verify
 
-Run the verification steps:
-
-// turbo
-```
-pnpm lint
+```bash
+bash scripts/verify.sh ci
+# Output: ✅ per step or ❌ + last 20 lines. Fix errors, re-run.
 ```
 
-// turbo
-```
-pnpm check-types
-```
+### 8. PR → use `/Prepare Pull Request`
 
-// turbo
-```
-pnpm test
-```
+Commit footer + PR body **both** must contain: `Closes #<N>`
 
-// turbo
-```
-pnpm build
-```
+## Expected output
 
-Fix any errors before proceeding.
-
-### 8. Prepare the PR
-
-Use the `/Prepare Pull Request` workflow to:
-- Format code
-- Generate conventional commit message referencing the issue:
-  ```
-  {type}({scope}): {description}
-
-  Closes #{issue_number}
-  Refs: {AC-xxx.x}
-  ```
-- Generate PR description linking back to the issue
-
-## Expected Output
-
-A feature branch with implementation, tests, and a ready-to-submit PR that closes the GitHub issue.
+Branch pushed, tests pass, PR description contains `Closes #N`.

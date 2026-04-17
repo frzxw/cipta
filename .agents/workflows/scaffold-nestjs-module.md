@@ -84,11 +84,11 @@ Create the following directory under `apps/api/src/modules/{moduleName}/`:
 
 Add the new module to the `imports` array in `apps/api/src/app.module.ts`.
 
-### 8. Verify build
+### 8. Verify
 
 // turbo
 ```
-pnpm --filter api build
+bash scripts/verify.sh build
 ```
 
 ## Expected Output

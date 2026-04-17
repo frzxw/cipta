@@ -1,154 +1,83 @@
 ---
 name: Implement PRD Feature
 description: >
-  Take a PRD feature ID (F-001 through F-009), read its spec, and implement the full
-  feature end-to-end across API, Worker, and Web. Use when the user says "implement F-001",
-  "build the ingestor feature", "start on feature X", or references a PRD feature by ID.
+  Implement a PRD feature end-to-end. Triggers: "implement F-001", "build the ingestor
+  feature", "start on feature X", or a PRD feature ID.
 ---
 
 # Implement PRD Feature
 
-End-to-end implementation of a PRD feature from spec to working code.
+## Context loading (scoped)
 
-## Trigger
+```bash
+# 1. Read only the feature row + its ACs from PRD
+bash scripts/spec.sh PRD "F-<id>"
 
-User references a PRD feature by ID (e.g., `F-001`, `F-004`) or by name.
+# 2. Read spec TOC first, then the one relevant section
+bash scripts/spec.sh <spec>             # headers only
+bash scripts/spec.sh <spec> "<section>"  # ≤60 lines
+```
 
-## Required Input
+| Feature | Spec |
+|---------|------|
+| F-001/F-002/F-003 | `specs/INGESTOR` |
+| F-004 | `specs/FACTORY` |
+| F-005 | `specs/GUARDIAN` |
+| F-006/F-007 | `specs/FLEET` |
+| F-008 | `DESIGN` |
+| F-009 | `specs/AUTH` |
 
-- **Feature ID**: F-001 through F-009 (see `docs/PRD.md §4`)
+Cross-refs: `ERD` for models, `API` for endpoints — read only matching sections.
+
+## Dependency chain
+
+`F-009 → F-001 → F-002 → F-003 → F-004 → F-005 → F-006 → F-007` (F-008 reads all)
+
+Check prerequisites exist before starting.
 
 ## Steps
 
-### 1. Read the PRD feature
+### 1. Scoped spec read → extract AC list
 
-Open `docs/PRD.md §4` and extract:
-- Feature ID, name, priority, module
-- All acceptance criteria (AC-xxx.x checkboxes)
-
-### 2. Read the module spec
-
-Map the feature to its detailed spec:
-
-| Feature | Module | Spec |
-|---------|--------|------|
-| F-001 (Source Ingestion) | Ingestor | `docs/specs/INGESTOR.md` |
-| F-002 (Transcription) | Ingestor | `docs/specs/INGESTOR.md §6` |
-| F-003 (Viral Spike Detection) | Ingestor | `docs/specs/INGESTOR.md §5` |
-| F-004 (Video Production) | Factory | `docs/specs/FACTORY.md` |
-| F-005 (Variation Generation) | Guardian | `docs/specs/GUARDIAN.md` |
-| F-006 (Account Management) | Fleet | `docs/specs/FLEET.md §2-3` |
-| F-007 (Distribution) | Fleet | `docs/specs/FLEET.md §4-6` |
-| F-008 (Dashboard) | Frontend | `docs/DESIGN.md` |
-| F-009 (Auth) | Auth | `docs/specs/AUTH.md` |
-
-Read the full spec and understand:
-- Data models involved (cross-ref `docs/ERD.md`)
-- API endpoints (cross-ref `docs/API.md`)
-- Worker jobs and status transitions
-- UI pages involved (cross-ref `docs/DESIGN.md`)
-
-### 3. Check the roadmap
-
-Open `docs/ROADMAP.md` to find which Phase and Milestone this feature belongs to.
-Check prerequisites — are the dependent features already implemented?
+### 2. Plan (present, wait for approval)
 
 ```
-Dependency chain:
-F-009 (Auth) → F-001 (Ingest) → F-002 (Transcribe) → F-003 (Viral Spike)
-  → F-004 (Video Prod) → F-005 (Variations) → F-006 (Accounts) → F-007 (Distribution)
-F-008 (Dashboard) reads from all
+## Plan: F-<id> — <name>
+DB: <model changes>
+Shared: <types/constants>
+API: <module/controller/service/DTOs>
+Worker: <processor/service> (if applicable)
+Web: <page/component> (if applicable)
+Tests: <files> → <AC-ids covered>
 ```
 
-### 4. Plan the implementation
+### 3. Branch
 
-Break the feature into atomic tasks:
-
-```
-## Implementation Plan: F-{id} — {name}
-
-### Database
-- [ ] Add/verify models in Prisma schema (if needed)
-- [ ] Run migration
-
-### Shared Package
-- [ ] Add/verify job payload types
-- [ ] Add/verify queue constants
-
-### API Layer (apps/api)
-- [ ] Module: {name}.module.ts
-- [ ] Controller: {name}.controller.ts with endpoints
-- [ ] Service: {name}.service.ts with business logic
-- [ ] DTOs: create-{name}.dto.ts, update-{name}.dto.ts
-
-### Worker Layer (apps/worker) — if applicable
-- [ ] Processor: {name}.processor.ts
-- [ ] Service(s): {name}.service.ts
-
-### Frontend (apps/web) — if applicable
-- [ ] Page: app/(dashboard)/{route}/page.tsx
-- [ ] Loading: loading.tsx
-- [ ] Error: error.tsx
-
-### Tests
-- [ ] Unit tests for each service
-- [ ] Integration tests for each endpoint
-- [ ] Trace to AC-{id}.x criteria
+```bash
+bash scripts/branch.sh <issue_number> feat f-<id>-<name>
 ```
 
-Present this plan to the user for approval.
+### 4. Execute (use Scaffold workflows per layer)
 
-### 5. Create branch
+- API module → `/Scaffold NestJS Feature Module`
+- Worker → `/Scaffold Worker Processor`
+- Frontend → `/Scaffold Dashboard Page`
+- Shared types → `/Scaffold Shared Package Type`
+- Schema → `/Database Migration`
 
-```
-git checkout -b feat/f-{id}-{short-name} develop
-```
+### 5. Verify each AC checkbox
 
-### 6. Execute plan
+### 6. Verify
 
-Work through the plan step by step. Use the appropriate `/Scaffold` workflow for each component:
-- `/Scaffold NestJS Feature Module` for the API module
-- `/Scaffold Worker Processor` for background job processing
-- `/Scaffold Dashboard Page` for the frontend
-- `/Scaffold Shared Package Type` for shared types
-- `/Database Migration` if schema changes are needed
-
-### 7. Verify all acceptance criteria
-
-Go through each AC-xxx.x checkbox and verify:
-- Does the implementation satisfy it?
-- Is there a test for it?
-
-### 8. Final verification
-
-// turbo
-```
-pnpm lint
+```bash
+bash scripts/verify.sh all
+# ✅ prisma → lint → types → test → build
 ```
 
-// turbo
-```
-pnpm check-types
-```
+### 7. PR → use `/Prepare Pull Request`
 
-// turbo
-```
-pnpm test
-```
+Include all covered `AC-<id>.x` in PR body.
 
-// turbo
-```
-pnpm build
-```
+## Expected output
 
-### 9. Prepare PR
-
-Use `/Prepare Pull Request` with:
-- Type: `feat`
-- Scope: the module name
-- Reference: `Implements F-{id} (PRD.md)`
-- List all AC-xxx.x covered
-
-## Expected Output
-
-Feature fully implemented across the required layers with tests tracing to acceptance criteria, built successfully, ready for code review.
+All ACs satisfied with tests, build passes, PR ready.

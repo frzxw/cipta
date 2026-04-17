@@ -53,23 +53,15 @@ pnpm --filter @cipta/database exec prisma generate
 
 If new models or enums were added that are used in job payloads or cross-package types, update `packages/shared/src/types/` accordingly.
 
-### 5. Verify builds
+### 5. Verify builds and tests
 
 // turbo
 ```
-pnpm build
+bash scripts/verify.sh all
 ```
 
-This runs Turborepo build across all packages. Fix any type errors caused by schema changes.
-
-### 6. Run tests
-
-// turbo
-```
-pnpm test
-```
-
-Fix any failing tests caused by schema changes (usually mock data shape changes).
+Runs: `prisma generate` → `lint` → `check-types` → `test` → `build`.
+Fix any type errors or failing tests caused by schema changes (usually mock data shape changes).
 
 ## Expected Output
 

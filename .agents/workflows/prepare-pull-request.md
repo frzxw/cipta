@@ -1,134 +1,91 @@
 ---
 name: Prepare Pull Request
 description: >
-  Prepare a standardized pull request: lint, type-check, test, format, then generate
-  commit message and PR description. Use when the user says "prepare a PR",
-  "create a pull request", "ready to merge", "finalize changes", or "submit for review".
+  Format → verify → commit → push → PR description. Triggers: "prepare a PR",
+  "create a pull request", "ready to merge", "finalize changes", "submit for review".
 ---
 
 # Prepare Pull Request
 
-Lints, type-checks, tests, and formats the codebase, then generates a conventional commit and PR description.
+## Required input
 
-## Trigger
-
-User has finished a feature/fix and wants to prepare a PR against `develop`.
-
-## Required Input
-
-- **PR type**: `feat`, `fix`, `docs`, `refactor`, `test`, `chore`, `perf`
-- **Scope**: `api`, `web`, `worker`, `database`, `shared`, `ui`, `docs`, `infra`
-- **Related spec/feature**: e.g., `F-001`, `AC-003.2`, or free text description
+| Field | Values |
+|-------|--------|
+| type | `feat` `fix` `docs` `refactor` `test` `chore` `perf` |
+| scope | `api` `web` `worker` `database` `shared` `ui` `docs` `infra` |
+| issue# | e.g. `42` (required for auto-close) |
+| spec ref | e.g. `F-001`, `AC-003.2` |
 
 ## Steps
 
-### 1. Check for uncommitted changes
+### 1. Status check (read: last 20 lines only)
 
-```
-git status
-```
-
-If there are unstaged files, stage them or ask the user which to include.
-
-### 2. Lint all packages
-
-// turbo
-```
-pnpm lint
+```bash
+git status --short
 ```
 
-If there are lint errors, fix them automatically where possible:
+Stage missing files or ask user which to include.
 
-```
-pnpm lint -- --fix
-```
+### 2. Format
 
-Report any remaining errors that need manual attention.
-
-### 3. Type-check all packages
-
-// turbo
-```
-pnpm check-types
-```
-
-Report and fix any TypeScript errors.
-
-### 4. Run tests (affected packages only)
-
-// turbo
-```
-pnpm test
-```
-
-If any tests fail, report them and stop. Do not proceed with a failing test suite.
-
-### 5. Format code
-
-// turbo
-```
+```bash
 pnpm format
 ```
 
-### 6. Generate commit message
+### 3. Verify
 
-Create a conventional commit message:
-
-```
-{type}({scope}): {concise description}
-
-{optional body explaining what and why}
-
-Refs: {spec reference, e.g., F-001, AC-003.2}
+```bash
+bash scripts/verify.sh ci
+# ✅ prisma:generate | ✅ lint | ✅ check-types | ✅ test
+# On ❌ → fix error shown (last 20 lines), re-run — do NOT proceed
 ```
 
-Example:
+### 4. Commit (use `git-commit` skill)
+
+Message template:
 ```
-feat(api): add ingestor module with source CRUD endpoints
+<type>(<scope>): <description>
 
-Implements the Ingestor controller, service, and DTOs for managing
-Sources. Dispatches download jobs to the worker via BullMQ.
+<optional body>
 
-Refs: F-001, INGESTOR.md §1
+Closes #<issue>
+Refs: <spec>
 ```
 
-### 7. Stage and commit
-
-```
+```bash
 git add -A
-git commit -m "{generated message}"
+git commit -m "<message>"
 ```
 
-### 8. Push branch
+### 5. Push
 
-```
+```bash
 git push origin HEAD
 ```
 
-### 9. Generate PR description
-
-Output a PR description in this format:
+### 6. PR description (output this block verbatim)
 
 ```markdown
 ## Summary
-{1-2 sentence summary of what this PR does}
+<1-2 sentences>
 
 ## Changes
-- {bullet point list of key changes}
+- <bullet>
 
 ## Spec Reference
-- [{spec}](docs/specs/{spec}.md) §{section}
+- [<spec>](docs/specs/<spec>.md) §<section>
 
 ## Testing
 - [ ] Unit tests added/updated
 - [ ] Integration tests added/updated (if applicable)
 - [ ] All existing tests pass
-- [ ] Coverage thresholds met
 
-## Screenshots
-{if UI changes, note that screenshots should be added}
+## Closes
+Closes #<issue>
 ```
 
-## Expected Output
+> `Closes #N` in body = GitHub auto-close on merge. **Required.**
 
-Code is linted, type-checked, tested, formatted, committed with a conventional message, pushed, and a PR description template is generated for the user to paste into the PR.
+## Expected output
+
+Committed, pushed, PR description ready with `Closes #N`.

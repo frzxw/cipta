@@ -22,12 +22,13 @@ None — this is a fully automated setup.
 
 Verify these tools are installed before proceeding. If missing, tell the user to install them:
 
-```
-node --version    # Must be 22.x
-pnpm --version    # Must be 9.x
-docker --version  # Must be installed
-ffmpeg -version   # Must be 7+ (for worker)
-yt-dlp --version  # Must be installed (for worker)
+```bash
+# Check versions (output: 1 line each — stop if mismatch)
+node --version  2>&1 | head -1   # need v22.x
+pnpm --version  2>&1 | head -1   # need 9.x
+docker --version 2>&1 | head -1  # need any
+ffmpeg -version 2>&1 | head -1   # need 7+
+yt-dlp --version 2>&1 | head -1  # need any
 ```
 
 ## Steps
@@ -74,11 +75,7 @@ Set the output as `JWT_ACCESS_SECRET`. Run again for `JWT_REFRESH_SECRET`. Run a
 // turbo
 ```
 pnpm --filter @cipta/database exec prisma migrate dev
-```
-
-// turbo
-```
-pnpm --filter @cipta/database exec prisma generate
+bash scripts/verify.sh prisma
 ```
 
 ### 6. Seed database (optional)
@@ -100,8 +97,10 @@ pnpm build
 
 // turbo
 ```
-pnpm dev
+pnpm dev 2>&1 | head -20
 ```
+
+Watch for startup errors in first 20 lines. Services ready when API logs `Listening on :3001`.
 
 ### 9. Verify services are running
 
