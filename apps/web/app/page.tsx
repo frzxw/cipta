@@ -1,90 +1,81 @@
-import Image, { type ImageProps } from 'next/image';
-import { Button } from '@cipta/ui/button';
-import styles from './page.module.css';
+import type { Metadata } from 'next';
 
-type Props = Omit<ImageProps, 'src'> & {
-  srcLight: string;
-  srcDark: string;
+export const metadata: Metadata = {
+  title: 'Cipta — Control Tower',
 };
 
-const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
-
+export default function HomePage() {
   return (
-    <>
-      <Image {...rest} src={srcLight} className="imgLight" />
-      <Image {...rest} src={srcDark} className="imgDark" />
-    </>
-  );
-};
+    <main
+      style={{
+        minHeight: '100dvh',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: '1.5rem',
+        padding: '2rem',
+        background: 'var(--background)',
+        color: 'var(--foreground)',
+        fontFamily: 'var(--font-sans)',
+      }}
+    >
+      {/* Wordmark */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect width="32" height="32" rx="8" fill="hsl(25 95% 53%)" />
+          <path
+            d="M8 16C8 11.582 11.582 8 16 8C18.21 8 20.21 8.895 21.657 10.344L18.828 13.172C18.062 12.406 17.031 12 16 12C13.791 12 12 13.791 12 16C12 18.209 13.791 20 16 20C17.031 20 18.062 19.594 18.828 18.828L21.657 21.656C20.21 23.105 18.21 24 16 24C11.582 24 8 20.418 8 16Z"
+            fill="white"
+          />
+        </svg>
+        <span
+          style={{
+            fontSize: '1.5rem',
+            fontWeight: 700,
+            letterSpacing: '-0.02em',
+            color: 'var(--foreground)',
+          }}
+        >
+          Cipta
+        </span>
+      </div>
 
-export default function Home() {
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <ThemeImage
-          className={styles.logo}
-          srcLight="turborepo-dark.svg"
-          srcDark="turborepo-light.svg"
-          alt="Turborepo logo"
-          width={180}
-          height={38}
-          priority
+      <p
+        style={{
+          fontSize: '0.875rem',
+          color: 'var(--muted-foreground)',
+          textAlign: 'center',
+          maxWidth: '20rem',
+        }}
+      >
+        Control Tower — AI-powered video production pipeline
+      </p>
+
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.375rem 0.75rem',
+          borderRadius: '9999px',
+          background: 'hsl(25 95% 53% / 0.15)',
+          border: '1px solid hsl(25 95% 53% / 0.3)',
+          fontSize: '0.75rem',
+          color: 'hsl(25 95% 63%)',
+        }}
+      >
+        <span
+          style={{
+            width: '6px',
+            height: '6px',
+            borderRadius: '50%',
+            background: 'hsl(25 95% 53%)',
+            display: 'inline-block',
+          }}
         />
-        <ol>
-          <li>
-            Get started by editing <code>apps/web/app/page.tsx</code>
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new/clone?demo-description=Learn+to+implement+a+monorepo+with+a+two+Next.js+sites+that+has+installed+three+local+packages.&demo-image=%2F%2Fimages.ctfassets.net%2Fe5382hct74si%2F4K8ZISWAzJ8X1504ca0zmC%2F0b21a1c6246add355e55816278ef54bc%2FBasic.png&demo-title=Monorepo+with+Turborepo&demo-url=https%3A%2F%2Fexamples-basic-web.vercel.sh%2F&from=templates&project-name=Monorepo+with+Turborepo&repository-name=monorepo-turborepo&repository-url=https%3A%2F%2Fgithub.com%2Fvercel%2Fturborepo%2Ftree%2Fmain%2Fexamples%2Fbasic&root-directory=apps%2Fdocs&skippable-integrations=1&teamSlug=vercel&utm_source=create-turbo"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            href="https://turborepo.dev/docs?utm_source"
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.secondary}
-          >
-            Read our docs
-          </a>
-        </div>
-        <Button appName="web" className={styles.secondary}>
-          Open alert
-        </Button>
-      </main>
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com/templates?search=turborepo&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
-          Examples
-        </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
-          Go to turborepo.dev →
-        </a>
-      </footer>
-    </div>
+        Bootstrap complete — Issue #14 ✓
+      </div>
+    </main>
   );
 }
