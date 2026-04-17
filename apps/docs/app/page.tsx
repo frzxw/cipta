@@ -63,7 +63,7 @@ export default function Home() {
             Read our docs
           </a>
         </div>
-        <Button appName="docs" className={styles.secondary}>
+        <Button variant="outline" className={styles.secondary}>
           Open alert
         </Button>
       </main>
