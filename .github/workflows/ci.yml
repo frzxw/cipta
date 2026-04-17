@@ -10,9 +10,6 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  NODE_VERSION: '22'
-
 jobs:
   # ─────────────────────────────────────────────
   # Stage 1: Fast checks (run in parallel)
@@ -22,11 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @cipta/database exec prisma generate
+      - uses: ./.github/actions/setup
       - run: pnpm lint
 
   type-check:
@@ -34,11 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @cipta/database exec prisma generate
+      - uses: ./.github/actions/setup
       - run: pnpm check-types
 
   format-check:
@@ -48,7 +37,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
+        with: { node-version: '22', cache: 'pnpm' }
       - run: pnpm install --frozen-lockfile
       - run: pnpm format:check
 
@@ -77,11 +66,7 @@ jobs:
             coverage-path: 'apps/web/coverage'
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @cipta/database exec prisma generate
+      - uses: ./.github/actions/setup
 
       - name: Run tests
         run: pnpm --filter ${{ matrix.filter }} test -- --coverage
@@ -130,11 +115,7 @@ jobs:
       JWT_REFRESH_SECRET: ci-test-refresh-secret-that-is-long-enough-for-256-bits-xxxxxx
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @cipta/database exec prisma generate
+      - uses: ./.github/actions/setup
       - run: pnpm --filter @cipta/database exec prisma migrate deploy
       - run: pnpm --filter api test:e2e
 
@@ -147,9 +128,5 @@ jobs:
     needs: [unit-tests]
     steps:
       - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: '${{ env.NODE_VERSION }}', cache: 'pnpm' }
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @cipta/database exec prisma generate
+      - uses: ./.github/actions/setup
       - run: pnpm build
