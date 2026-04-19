@@ -11,6 +11,7 @@
   --color-bg-base:     hsl(224 20% 6%);   /* #0D0F14 */
   --color-bg-surface:  hsl(224 18% 10%);  /* #151820 */
   --color-bg-elevated: hsl(224 16% 14%);  /* #1E2028 */
+  --color-bg-hover:    hsl(224 14% 18%);  /* #282A34 */
 
   /* Semantic status */
   --color-status-success: #22C55E;
