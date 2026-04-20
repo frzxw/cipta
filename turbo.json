@@ -2,7 +2,14 @@
   "$schema": "https://turborepo.dev/schema.json",
   "ui": "tui",
   "globalDependencies": ["pnpm-lock.yaml", ".env*"],
-  "globalEnv": ["PORT", "JWT_ACCESS_SECRET", "JWT_REFRESH_SECRET", "SWAGGER_ENABLED"],
+  "globalEnv": [
+    "PORT",
+    "API_PORT",
+    "API_HOST",
+    "JWT_ACCESS_SECRET",
+    "JWT_REFRESH_SECRET",
+    "SWAGGER_ENABLED"
+  ],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
