@@ -8,7 +8,12 @@
     "API_HOST",
     "JWT_ACCESS_SECRET",
     "JWT_REFRESH_SECRET",
-    "SWAGGER_ENABLED"
+    "SWAGGER_ENABLED",
+    "REDIS_HOST",
+    "REDIS_PORT",
+    "REDIS_PASSWORD",
+    "REDIS_DB",
+    "REDIS_TLS"
   ],
   "tasks": {
     "build": {
