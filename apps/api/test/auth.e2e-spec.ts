@@ -2,6 +2,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
+import * as RedisMock from 'ioredis-mock';
+
+jest.mock('ioredis', () => RedisMock);
+
 import { JwtService } from '@nestjs/jwt';
 import { WorkspaceRole } from '@cipta/database';
 import * as bcrypt from 'bcrypt';
