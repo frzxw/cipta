@@ -3,12 +3,24 @@
   "version": "0.0.0",
   "private": true,
   "main": "./dist/src/index.js",
-  "types": "./dist/src/index.d.ts",
+  "types": "./src/index.ts",
   "exports": {
-    ".": "./dist/src/index.js",
-    "./constants/queues": "./dist/src/constants/queues.js",
-    "./types/jobs": "./dist/src/types/jobs.js",
-    "./types/enums": "./dist/src/types/enums.js"
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/src/index.js"
+    },
+    "./constants/queues": {
+      "types": "./src/constants/queues.ts",
+      "default": "./dist/src/constants/queues.js"
+    },
+    "./types/jobs": {
+      "types": "./src/types/jobs.ts",
+      "default": "./dist/src/types/jobs.js"
+    },
+    "./types/enums": {
+      "types": "./src/types/enums.ts",
+      "default": "./dist/src/types/enums.js"
+    }
   },
   "scripts": {
     "build": "tsc",
