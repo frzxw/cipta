@@ -1,14 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { Logo } from '../../../components/layout/logo';
-import { LoginForm } from './login-form';
+import { RegisterForm } from './register-form';
 
 export const metadata: Metadata = {
-  title: 'Sign In',
-  description: 'Sign in to Cipta Control Tower.',
+  title: 'Create account',
+  description: 'Create your Cipta Control Tower account.',
 };
 
-export default function LoginPage() {
+export default function RegisterPage() {
   return (
     <div className="w-full max-w-sm space-y-6">
       <div className="flex flex-col items-center gap-2">
@@ -18,21 +18,21 @@ export default function LoginPage() {
 
       <div className="rounded-xl bg-bg-surface border border-border p-6 space-y-4 shadow-xl shadow-black/30">
         <div className="space-y-1">
-          <h1 className="text-lg font-semibold text-foreground text-center">Sign in to Cipta</h1>
+          <h1 className="text-lg font-semibold text-foreground text-center">Create your account</h1>
           <p className="text-xs text-muted-foreground text-center">
-            Enter your credentials to access the Control Tower
+            Spin up a workspace and start producing
           </p>
         </div>
 
-        <LoginForm />
+        <RegisterForm />
 
         <p className="text-center text-xs text-muted-foreground">
-          New to Cipta?{' '}
+          Already have an account?{' '}
           <Link
-            href="/register"
+            href="/login"
             className="text-brand-primary hover:underline focus-visible:outline-none focus-visible:underline"
           >
-            Create an account
+            Sign in
           </Link>
         </p>
       </div>

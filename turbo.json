@@ -3,9 +3,11 @@
   "ui": "tui",
   "globalDependencies": ["pnpm-lock.yaml", ".env*"],
   "globalEnv": [
+    "NODE_ENV",
     "PORT",
     "API_PORT",
     "API_HOST",
+    "API_BASE_URL",
     "JWT_ACCESS_SECRET",
     "JWT_REFRESH_SECRET",
     "SWAGGER_ENABLED",
