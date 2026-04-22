@@ -73,7 +73,8 @@ test.describe('Authentication flow', () => {
     await page.getByLabel('Password').fill('Password1!');
     await page.getByRole('button', { name: /sign in/i }).click();
 
-    await expect(page.getByRole('alert')).toContainText(/invalid credentials/i);
+    const form = page.getByRole('form', { name: /sign in/i });
+    await expect(form.getByRole('alert')).toContainText(/invalid credentials/i);
   });
 
   test('register form validates password rules', async ({ page }) => {
@@ -82,7 +83,7 @@ test.describe('Authentication flow', () => {
     await page.getByLabel('Email').fill('jane@example.com');
     await page.getByLabel('Password').fill('weakpass');
     await page.getByRole('button', { name: /create account/i }).click();
-    await expect(page.getByText(/uppercase/i)).toBeVisible();
+    await expect(page.getByText(/password must contain at least one uppercase/i)).toBeVisible();
   });
 
   test('successful registration redirects to dashboard', async ({ page, context }) => {
