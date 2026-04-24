@@ -1,5 +1,5 @@
 import { ForbiddenException } from '@nestjs/common';
-import { WorkspaceRole } from '@cipta/database';
+import { type WorkspaceRole } from '@cipta/database';
 
 export interface JwtWorkspaceClaim {
   id: string;

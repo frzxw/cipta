@@ -14,11 +14,20 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <Sidebar mobileOpen={mobileOpen} onMobileClose={() => setMobileOpen(false)} />
+      <Sidebar
+        mobileOpen={mobileOpen}
+        onMobileClose={() => {
+          setMobileOpen(false);
+        }}
+      />
 
       {/* Main area: topbar + scrollable content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        <Topbar onMobileMenuOpen={() => setMobileOpen(true)} />
+        <Topbar
+          onMobileMenuOpen={() => {
+            setMobileOpen(true);
+          }}
+        />
 
         <main id="main-content" className="flex-1 overflow-y-auto p-4 md:p-6" tabIndex={-1}>
           {children}

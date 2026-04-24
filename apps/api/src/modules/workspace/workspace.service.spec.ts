@@ -3,12 +3,12 @@ import {
   ForbiddenException,
   NotFoundException,
 } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { WorkspacePlan, WorkspaceRole } from '@cipta/database';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateWorkspaceDto } from './dto/create-workspace.dto';
-import { InviteMemberDto } from './dto/invite-member.dto';
-import { UpdateWorkspaceDto } from './dto/update-workspace.dto';
+import { type CreateWorkspaceDto } from './dto/create-workspace.dto';
+import { type InviteMemberDto } from './dto/invite-member.dto';
+import { type UpdateWorkspaceDto } from './dto/update-workspace.dto';
 import { WorkspaceService } from './workspace.service';
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -285,10 +285,12 @@ describe('WorkspaceService', () => {
       const result = await service.inviteMember(WORKSPACE_ID, USER_ID, dto);
       expect(result.email).toBe('invitee@test.com');
       expect(result.role).toBe(WorkspaceRole.MEMBER);
-      type CreateMemberArg = { data: { workspaceId: string } };
-      const mockCalls = mockPrisma.workspaceMember.create.mock.calls as Array<
-        [CreateMemberArg]
-      >;
+      interface CreateMemberArg {
+        data: { workspaceId: string };
+      }
+      const mockCalls = mockPrisma.workspaceMember.create.mock.calls as [
+        CreateMemberArg,
+      ][];
       const createCallArgs = mockCalls[0]?.[0];
       expect(createCallArgs?.data?.workspaceId).toBe(WORKSPACE_ID);
     });

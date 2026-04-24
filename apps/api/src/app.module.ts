@@ -7,6 +7,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { IngestorModule } from './modules/ingestor/ingestor.module';
+import { HealthModule } from './modules/health/health.module';
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { IngestorModule } from './modules/ingestor/ingestor.module';
     AuthModule,
     WorkspaceModule,
     IngestorModule,
+    HealthModule,
   ],
   controllers: [AppController],
   providers: [

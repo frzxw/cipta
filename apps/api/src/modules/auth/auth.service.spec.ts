@@ -1,4 +1,4 @@
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { JwtService } from '@nestjs/jwt';
 import { WorkspaceRole } from '@cipta/database';
 import * as bcrypt from 'bcrypt';
@@ -20,7 +20,7 @@ describe('AuthService', () => {
     revokedAt: Date | null;
   }
 
-  type MockTransactionClient = {
+  interface MockTransactionClient {
     user: {
       create: jest.Mock;
     };
@@ -30,7 +30,7 @@ describe('AuthService', () => {
     workspaceMember: {
       create: jest.Mock;
     };
-  };
+  }
 
   const refreshTokenStore = new Map<string, StoredRefreshToken>();
 

@@ -1,8 +1,8 @@
-import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { createParamDecorator, type ExecutionContext } from '@nestjs/common';
 import type { Request } from 'express';
 import {
-  AuthenticatedRequestUser,
-  WorkspaceScopeContext,
+  type AuthenticatedRequestUser,
+  type WorkspaceScopeContext,
   resolveWorkspaceScope,
 } from '../workspace-scope.util';
 

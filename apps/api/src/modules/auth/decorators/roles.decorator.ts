@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { WorkspaceRole } from '@cipta/database';
+import { type WorkspaceRole } from '@cipta/database';
 
 export const ROLES_KEY = 'roles';
 

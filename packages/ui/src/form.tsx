@@ -1,6 +1,6 @@
 'use client';
 
-import * as LabelPrimitive from '@radix-ui/react-label';
+import type * as LabelPrimitive from '@radix-ui/react-label';
 import { Slot } from '@radix-ui/react-slot';
 import {
   createContext,
@@ -40,7 +40,7 @@ function FormField<
 >(props: ControllerProps<TFieldValues, TName>) {
   const ctx = useMemo(() => ({ name: props.name }), [props.name]);
   return (
-    <FormFieldContext.Provider value={ctx as FormFieldContextValue}>
+    <FormFieldContext.Provider value={ctx}>
       <Controller {...props} />
     </FormFieldContext.Provider>
   );
