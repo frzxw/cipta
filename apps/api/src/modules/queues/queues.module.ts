@@ -17,7 +17,7 @@ import { QUEUE_NAMES } from '@cipta/shared';
       route: '/admin/queues',
       adapter: ExpressAdapter,
     }),
-    BullBoardModule.forFeature([
+    BullBoardModule.forFeature(
       {
         name: QUEUE_NAMES.INGESTOR,
         adapter: BullMQAdapter,
@@ -34,7 +34,7 @@ import { QUEUE_NAMES } from '@cipta/shared';
         name: QUEUE_NAMES.FLEET,
         adapter: BullMQAdapter,
       },
-    ]),
+    ),
   ],
   exports: [BullModule],
 })
