@@ -1,7 +1,7 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { INestApplication } from '@nestjs/common';
+import { Test, type TestingModule } from '@nestjs/testing';
+import { type INestApplication } from '@nestjs/common';
 import request from 'supertest';
-import { App } from 'supertest/types';
+import { type App } from 'supertest/types';
 import * as RedisMock from 'ioredis-mock';
 
 jest.mock('ioredis', () => RedisMock);
@@ -23,7 +23,7 @@ interface StoredUser {
   passwordHash: string;
   displayName: string;
   createdAt: Date;
-  workspaces: Array<{ role: WorkspaceRole; workspace: { id: string } }>;
+  workspaces: { role: WorkspaceRole; workspace: { id: string } }[];
 }
 
 interface StoredRefreshToken {
@@ -356,7 +356,6 @@ describe('Auth (e2e)', () => {
     });
 
     it('[AC-13.7] should return 400 when displayName is missing', async () => {
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { displayName: _displayName, ...body } = BASE_REGISTER_BODY;
       await request(app.getHttpServer())
         .post('/v1/auth/register')
@@ -613,7 +612,7 @@ describe('Auth (e2e)', () => {
       const payload = await jwtService.verifyAsync<{
         sub: string;
         email: string;
-        workspaces: Array<{ id: string; role: WorkspaceRole }>;
+        workspaces: { id: string; role: WorkspaceRole }[];
       }>(data.tokens.accessToken, { secret: process.env.JWT_ACCESS_SECRET });
 
       expect(payload.email).toBe('alice@example.com');

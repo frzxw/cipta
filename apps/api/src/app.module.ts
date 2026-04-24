@@ -7,6 +7,8 @@ import { AppService } from './app.service';
 import { AuthModule } from './modules/auth/auth.module';
 import { WorkspaceModule } from './modules/workspace/workspace.module';
 import { IngestorModule } from './modules/ingestor/ingestor.module';
+import { HealthModule } from './modules/health/health.module';
+import { QueuesModule } from './modules/queues/queues.module';
 
 @Module({
   imports: [
@@ -41,6 +43,8 @@ import { IngestorModule } from './modules/ingestor/ingestor.module';
     AuthModule,
     WorkspaceModule,
     IngestorModule,
+    HealthModule,
+    QueuesModule,
   ],
   controllers: [AppController],
   providers: [

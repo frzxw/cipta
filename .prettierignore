@@ -2,3 +2,5 @@
 dist
 node_modules
 .agents
+packages/database/src/generated
+pnpm-lock.yaml

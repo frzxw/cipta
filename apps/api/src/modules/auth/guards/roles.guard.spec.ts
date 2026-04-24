@@ -41,12 +41,12 @@ describe('RolesGuard', () => {
       return this.handler;
     }
 
-    getArgs<T extends Array<unknown> = Array<unknown>>(): T {
+    getArgs<T extends unknown[] = unknown[]>(): T {
       return [this.request] as unknown as T;
     }
 
     getArgByIndex<T = unknown>(index: number): T {
-      return this.getArgs<Array<unknown>>()[index] as T;
+      return this.getArgs()[index] as T;
     }
 
     switchToRpc(): RpcArgumentsHost {
