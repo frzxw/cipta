@@ -99,7 +99,9 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
           {/* Desktop collapse toggle */}
           {!collapsed && (
             <button
-              onClick={() => setCollapsed(true)}
+              onClick={() => {
+                setCollapsed(true);
+              }}
               className="hidden md:flex p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="Collapse sidebar"
             >
@@ -150,7 +152,9 @@ export function Sidebar({ mobileOpen = false, onMobileClose }: SidebarProps) {
         {collapsed && (
           <div className="hidden md:flex justify-center py-3 border-t border-border shrink-0">
             <button
-              onClick={() => setCollapsed(false)}
+              onClick={() => {
+                setCollapsed(false);
+              }}
               className="p-1.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
               aria-label="Expand sidebar"
             >

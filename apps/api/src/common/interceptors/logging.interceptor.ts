@@ -20,10 +20,10 @@ export class LoggingInterceptor implements NestInterceptor {
     const url = request.originalUrl ?? 'unknown-url';
     const start = Date.now();
 
-    return next
-      .handle()
-      .pipe(
-        tap(() => this.logger.log(`${method} ${url} ${Date.now() - start}ms`)),
-      );
+    return next.handle().pipe(
+      tap(() => {
+        this.logger.log(`${method} ${url} ${Date.now() - start}ms`);
+      }),
+    );
   }
 }

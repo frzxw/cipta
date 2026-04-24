@@ -1,3 +1,3 @@
 export * from './constants/queues';
-export * from './types/jobs';
+export type * from './types/jobs';
 export * from './types/enums';

@@ -1,8 +1,8 @@
 export const QUEUE_NAMES = {
-  INGESTOR: 'cipta.ingestor',
-  FACTORY: 'cipta.factory',
-  GUARDIAN: 'cipta.guardian',
-  FLEET: 'cipta.fleet',
+  INGESTOR: 'cipta:ingestor',
+  FACTORY: 'cipta:factory',
+  GUARDIAN: 'cipta:guardian',
+  FLEET: 'cipta:fleet',
 } as const;
 
 export type QueueName = (typeof QUEUE_NAMES)[keyof typeof QUEUE_NAMES];
