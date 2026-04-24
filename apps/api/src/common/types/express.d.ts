@@ -7,10 +7,10 @@ declare global {
       email?: string;
       role?: string;
       roles?: string[];
-      workspaces?: Array<{
+      workspaces?: {
         id: string;
         role: WorkspaceRole;
-      }>;
+      }[];
     }
 
     interface Request {

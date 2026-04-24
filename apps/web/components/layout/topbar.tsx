@@ -39,8 +39,12 @@ export function Topbar({ onMobileMenuOpen }: TopbarProps) {
           type="search"
           placeholder="Search… (⌘K)"
           className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground/60 outline-none min-w-0"
-          onFocus={() => setSearchFocused(true)}
-          onBlur={() => setSearchFocused(false)}
+          onFocus={() => {
+            setSearchFocused(true);
+          }}
+          onBlur={() => {
+            setSearchFocused(false);
+          }}
           aria-label="Global search"
         />
       </div>
