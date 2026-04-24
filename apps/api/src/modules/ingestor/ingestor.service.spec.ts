@@ -1,11 +1,11 @@
 import { ConflictException, NotFoundException } from '@nestjs/common';
-import { Test, TestingModule } from '@nestjs/testing';
+import { Test, type TestingModule } from '@nestjs/testing';
 import { getQueueToken } from '@nestjs/bullmq';
 import { SourceStatus } from '@cipta/database';
 import { QUEUE_NAMES } from '@cipta/shared';
 import { PrismaService } from '../../prisma/prisma.service';
-import { CreateSourceDto } from './dto/create-source.dto';
-import { ListSourcesDto } from './dto/list-sources.dto';
+import { type CreateSourceDto } from './dto/create-source.dto';
+import { type ListSourcesDto } from './dto/list-sources.dto';
 import { IngestorService } from './ingestor.service';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
