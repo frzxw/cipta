@@ -19,7 +19,7 @@ export class PrismaService
     try {
       await this.$queryRaw`SELECT 1`;
       return { database: { status: 'up' } };
-    } catch (error) {
+    } catch (error: unknown) {
       throw new HealthCheckError('Prisma check failed', error);
     }
   }

@@ -4,9 +4,9 @@ import { loadConfig } from './config';
 describe('loadConfig', () => {
   beforeEach(() => {
     vi.resetModules();
-    process.env.REDIS_HOST = 'localhost';
-    process.env.REDIS_PORT = '6379';
-    process.env.STORAGE_PROVIDER = 'local';
+    vi.stubEnv('REDIS_HOST', 'localhost');
+    vi.stubEnv('REDIS_PORT', '6379');
+    vi.stubEnv('STORAGE_PROVIDER', 'local');
   });
 
   it('should load default configuration', () => {
@@ -17,9 +17,9 @@ describe('loadConfig', () => {
   });
 
   it('should override configuration with environment variables', () => {
-    process.env.REDIS_HOST = 'redis-prod';
-    process.env.REDIS_PORT = '6380';
-    process.env.STORAGE_PROVIDER = 's3';
+    vi.stubEnv('REDIS_HOST', 'redis-prod');
+    vi.stubEnv('REDIS_PORT', '6380');
+    vi.stubEnv('STORAGE_PROVIDER', 's3');
 
     const config = loadConfig();
     expect(config.redis.host).toBe('redis-prod');
